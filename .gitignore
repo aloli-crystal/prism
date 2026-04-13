@@ -5,3 +5,7 @@
 *.dwarf
 
 /shard.lock
+
+# Frontend build
+/frontend/node_modules/
+/frontend/package-lock.json

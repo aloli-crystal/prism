@@ -1,6 +1,9 @@
 module Prism
   module UI
     module Html
+      # Le bundle JS est embarqué dans le binaire à la compilation
+      EDITOR_JS = {{ read_file("assets/editor.bundle.js") }}
+
       def self.page : String
         <<-HTML
         <!DOCTYPE html>
@@ -11,10 +14,18 @@ module Prism
         </head>
         <body>
           <div class="toolbar">
-            <h1 class="app-title">Prism</h1>
+            <div class="toolbar-left">
+              <svg class="app-logo" viewBox="0 0 24 24" width="18" height="18">
+                <polygon points="8,4 12,2 16,4 18,10 16,18 12,20 8,18 6,10" fill="none" stroke="#6e6e73" stroke-width="1.4" stroke-linejoin="round"/>
+                <polygon points="12,2 12,20 8,18 8,4" fill="#a0aec0" opacity="0.3"/>
+                <polygon points="12,2 16,4 16,18 12,20" fill="#718096" opacity="0.2"/>
+                <line x1="6,10" y1="0" x2="18,10" y2="0" stroke="#0071e3" stroke-width="1" opacity="0.5"/>
+              </svg>
+              <span class="app-title">Prism</span>
+            </div>
             <div class="toolbar-actions">
-              <button onclick="doExportPdf()">Export PDF</button>
-              <button onclick="doExportEpub()">Export EPUB</button>
+              <button id="btn-export-pdf">Export PDF</button>
+              <button id="btn-export-epub">Export EPUB</button>
             </div>
           </div>
 
@@ -24,42 +35,11 @@ module Prism
                 <span class="tab active" data-tab="asciidoc">AsciiDoc</span>
                 <span class="tab" data-tab="style">Style</span>
               </div>
-              <textarea id="editor-asciidoc" class="editor" spellcheck="false">= Mon document
-:author: Philippe
-
-== Introduction
-
-Ceci est un *prototype* de l'éditeur _Prism_.
-
-== Fonctionnalités prévues
-
-* Édition AsciiDoc avec coloration syntaxique
-* Prévisualisation live
-* Export HTML, PDF et EPUB
-* Éditeur de feuille de style</textarea>
-              <textarea id="editor-style" class="editor hidden" spellcheck="false">/* Personnalisez le rendu ici */
-
-h1 {
-  color: #2d3748;
-  border-bottom: 2px solid #4299e1;
-  padding-bottom: 0.3em;
-}
-
-h2 {
-  color: #4a5568;
-}
-
-strong {
-  color: #e53e3e;
-}
-
-body {
-  font-family: Georgia, serif;
-  line-height: 1.7;
-  max-width: 42em;
-  padding: 1em;
-}</textarea>
+              <div id="editor-asciidoc" class="editor-container"></div>
+              <div id="editor-style" class="editor-container hidden"></div>
             </div>
+
+            <div class="divider" id="divider"></div>
 
             <div class="panel preview-panel">
               <div class="panel-header">
@@ -69,7 +49,7 @@ body {
             </div>
           </div>
 
-          <script>#{js}</script>
+          <script>#{EDITOR_JS}</script>
         </body>
         </html>
         HTML
@@ -93,39 +73,51 @@ body {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 8px 16px;
-          background: #ffffff;
-          border-bottom: 1px solid #e5e5e7;
+          padding: 6px 16px;
+          background: linear-gradient(180deg, #fafafa 0%, #f0f0f2 100%);
+          border-bottom: 1px solid #d2d2d7;
           -webkit-app-region: drag;
         }
 
+        .toolbar-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
         .app-title {
-          font-size: 14px;
+          font-size: 13px;
           font-weight: 600;
           color: #6e6e73;
-          letter-spacing: 1px;
-          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
 
         .toolbar-actions {
           display: flex;
-          gap: 8px;
+          gap: 6px;
           -webkit-app-region: no-drag;
         }
 
         .toolbar-actions button {
-          padding: 5px 14px;
+          padding: 4px 12px;
           border: 1px solid #d2d2d7;
-          border-radius: 6px;
-          background: #ffffff;
+          border-radius: 5px;
+          background: linear-gradient(180deg, #ffffff 0%, #f5f5f7 100%);
           color: #1d1d1f;
           font-size: 12px;
+          font-family: inherit;
           cursor: pointer;
-          transition: background 0.15s;
+          transition: all 0.15s;
+          box-shadow: 0 0.5px 1px rgba(0,0,0,0.05);
         }
 
         .toolbar-actions button:hover {
-          background: #f0f0f2;
+          background: linear-gradient(180deg, #f5f5f7 0%, #e8e8ed 100%);
+        }
+
+        .toolbar-actions button:active {
+          background: #e8e8ed;
+          box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
         }
 
         .panels {
@@ -141,8 +133,15 @@ body {
           min-width: 0;
         }
 
-        .editor-panel {
-          border-right: 1px solid #e5e5e7;
+        .divider {
+          width: 5px;
+          cursor: col-resize;
+          background: #e5e5e7;
+          transition: background 0.15s;
+        }
+
+        .divider:hover {
+          background: #0071e3;
         }
 
         .panel-header {
@@ -153,13 +152,18 @@ body {
           border-bottom: 1px solid #e5e5e7;
           font-size: 12px;
           color: #86868b;
+          min-height: 32px;
+          align-items: stretch;
         }
 
         .tab {
-          padding: 8px 14px;
+          padding: 0 14px;
           cursor: pointer;
           border-bottom: 2px solid transparent;
+          display: flex;
+          align-items: center;
           transition: all 0.15s;
+          user-select: none;
         }
 
         .tab.active {
@@ -171,80 +175,39 @@ body {
           color: #1d1d1f;
         }
 
-        .editor {
+        .editor-container {
           flex: 1;
-          padding: 16px;
-          border: none;
-          resize: none;
-          font-family: "SF Mono", "Fira Code", "Menlo", monospace;
-          font-size: 13px;
-          line-height: 1.6;
-          background: #ffffff;
-          color: #1d1d1f;
-          outline: none;
-          tab-size: 2;
+          overflow: hidden;
         }
 
-        .hidden { display: none; }
+        .editor-container .cm-editor {
+          height: 100%;
+        }
+
+        .hidden { display: none !important; }
 
         #preview {
           flex: 1;
           border: none;
           background: #ffffff;
         }
+
+        /* Scrollbar macOS-like */
+        ::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: rgba(0,0,0,0.15);
+          border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: rgba(0,0,0,0.25);
+        }
         CSS
-      end
-
-      private def self.js : String
-        <<-JS
-        const editorAsciidoc = document.getElementById('editor-asciidoc');
-        const editorStyle = document.getElementById('editor-style');
-        const preview = document.getElementById('preview');
-        const tabs = document.querySelectorAll('.tab');
-
-        // Onglets
-        tabs.forEach(tab => {
-          tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            const target = tab.dataset.tab;
-            editorAsciidoc.classList.toggle('hidden', target !== 'asciidoc');
-            editorStyle.classList.toggle('hidden', target !== 'style');
-          });
-        });
-
-        // Prévisualisation live
-        let debounceTimer;
-
-        function updatePreview() {
-          clearTimeout(debounceTimer);
-          debounceTimer = setTimeout(async () => {
-            const html = await convertAsciidoc(editorAsciidoc.value);
-            const style = editorStyle.value;
-            const doc = preview.contentDocument;
-            doc.open();
-            doc.write('<html><head><style>' + style + '</style></head><body>' + html + '</body></html>');
-            doc.close();
-          }, 300);
-        }
-
-        editorAsciidoc.addEventListener('input', updatePreview);
-        editorStyle.addEventListener('input', updatePreview);
-
-        // Export
-        async function doExportPdf() {
-          const result = await exportPdf(editorAsciidoc.value, editorStyle.value);
-          alert(result);
-        }
-
-        async function doExportEpub() {
-          const result = await exportEpub(editorAsciidoc.value, editorStyle.value);
-          alert(result);
-        }
-
-        // Initialisation
-        updatePreview();
-        JS
       end
     end
   end
