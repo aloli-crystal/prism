@@ -4,80 +4,60 @@ import { StreamLanguage } from "@codemirror/language"
 import { asciidoc } from "codemirror-asciidoc"
 import { css } from "@codemirror/lang-css"
 import { html } from "@codemirror/lang-html"
-import { keymap } from "@codemirror/view"
 
-// Theme clair style macOS
-const macosLightTheme = EditorView.theme({
-  "&": {
-    fontSize: "13px",
-    fontFamily: '"SF Mono", "Fira Code", Menlo, monospace',
-    height: "100%",
-    backgroundColor: "#ffffff",
-  },
-  ".cm-content": {
-    padding: "12px 0",
-    caretColor: "#0071e3",
-  },
-  ".cm-cursor": {
-    borderLeftColor: "#0071e3",
-  },
-  ".cm-activeLine": {
-    backgroundColor: "#f0f4ff",
-  },
-  ".cm-gutters": {
-    backgroundColor: "#fafafa",
-    color: "#c7c7cc",
-    border: "none",
-    borderRight: "1px solid #e5e5e7",
-  },
-  ".cm-activeLineGutter": {
-    backgroundColor: "#f0f4ff",
-    color: "#86868b",
-  },
-  ".cm-selectionBackground": {
-    backgroundColor: "#b4d8fd !important",
-  },
-  "&.cm-focused .cm-selectionBackground": {
-    backgroundColor: "#b4d8fd !important",
-  },
-  ".cm-matchingBracket": {
-    backgroundColor: "#e0f0ff",
-    outline: "1px solid #90cdf4",
-  },
-})
+// --- Theme ---
+const macosTheme = (dark) =>
+  EditorView.theme(
+    {
+      "&": {
+        fontSize: "13px",
+        fontFamily: '"SF Mono", "Fira Code", Menlo, monospace',
+        height: "100%",
+        backgroundColor: dark ? "#1e1e1e" : "#ffffff",
+        color: dark ? "#d4d4d4" : "#1d1d1f",
+      },
+      ".cm-content": { padding: "12px 0", caretColor: "#0071e3" },
+      ".cm-cursor": { borderLeftColor: "#0071e3" },
+      ".cm-activeLine": { backgroundColor: dark ? "#2a2a2a" : "#f0f4ff" },
+      ".cm-gutters": {
+        backgroundColor: dark ? "#1e1e1e" : "#fafafa",
+        color: dark ? "#555" : "#c7c7cc",
+        border: "none",
+        borderRight: dark ? "1px solid #333" : "1px solid #e5e5e7",
+      },
+      ".cm-activeLineGutter": {
+        backgroundColor: dark ? "#2a2a2a" : "#f0f4ff",
+        color: dark ? "#888" : "#86868b",
+      },
+      ".cm-selectionBackground": {
+        backgroundColor: dark ? "#264f78 !important" : "#b4d8fd !important",
+      },
+      "&.cm-focused .cm-selectionBackground": {
+        backgroundColor: dark ? "#264f78 !important" : "#b4d8fd !important",
+      },
+    },
+    { dark }
+  )
 
+// --- Default content ---
 const defaultAsciidoc = `= Mon document
 :author: Philippe
 :toc:
 
 == Introduction
 
-Ceci est un *prototype* de l'éditeur _Prism_.
-
-Un éditeur AsciiDoc en pur Crystal avec prévisualisation live.
+Bienvenue dans *Prism*, l'éditeur AsciiDoc en Crystal.
 
 == Fonctionnalités
 
-* Édition AsciiDoc avec coloration syntaxique
-* Prévisualisation live du rendu
+* Coloration syntaxique AsciiDoc
+* Prévisualisation live
 * Export HTML, PDF et EPUB
-* Éditeur de feuille de style personnalisable
-* Édition HTML bidirectionnelle
-
-== Exemple de code
-
-Un bloc de code :
-
- puts "Hello from Prism!"
-
-== Conclusion
-
-Ce prototype utilise https://github.com/naqvis/webview[webview] pour l'interface native et les shards https://github.com/aloli-crystal[aloli-crystal] pour le pipeline AsciiDoc.
+* Éditeur de style CSS
+* Intégration Git
 `
 
-const defaultCss = `/* Personnalisez le rendu ici */
-
-body {
+const defaultCss = `body {
   font-family: -apple-system, BlinkMacSystemFont, Georgia, serif;
   line-height: 1.7;
   color: #1d1d1f;
@@ -85,7 +65,6 @@ body {
   margin: 0 auto;
   padding: 1.5em;
 }
-
 h1 {
   color: #1d1d1f;
   font-size: 1.8em;
@@ -93,37 +72,21 @@ h1 {
   padding-bottom: 0.3em;
   margin-bottom: 0.6em;
 }
-
-h2 {
-  color: #2d3748;
-  font-size: 1.3em;
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-}
-
+h2 { color: #2d3748; font-size: 1.3em; margin-top: 1.5em; margin-bottom: 0.5em; }
 strong { color: #c0392b; }
 em { color: #6e6e73; }
-
 a { color: #0071e3; text-decoration: none; }
 a:hover { text-decoration: underline; }
-
 ul { padding-left: 1.5em; }
 li { margin-bottom: 0.3em; }
-
 code, pre {
-  font-family: "SF Mono", "Fira Code", Menlo, monospace;
+  font-family: "SF Mono", Menlo, monospace;
   font-size: 0.9em;
   background: #f5f5f7;
   border-radius: 4px;
 }
-
 code { padding: 0.15em 0.4em; }
-
-pre {
-  padding: 1em;
-  overflow-x: auto;
-  border: 1px solid #e5e5e7;
-}
+pre { padding: 1em; overflow-x: auto; border: 1px solid #e5e5e7; }
 `
 
 // --- State ---
@@ -132,27 +95,34 @@ let debounceTimer
 let currentFilePath = ""
 let isModified = false
 let previewVisible = true
-let lastHtmlFromAsciidoc = ""
+let sidebarVisible = false
+let darkMode = false
+let zenMode = false
+let lastHtml = ""
 
 // --- Editor creation ---
-
 function createEditor(parent, lang, doc, onChange) {
-  const extensions = [
-    basicSetup,
-    lang,
-    macosLightTheme,
-    EditorView.updateListener.of((update) => {
-      if (update.docChanged && onChange) onChange()
-    }),
-  ]
   return new EditorView({
-    state: EditorState.create({ doc, extensions }),
+    state: EditorState.create({
+      doc,
+      extensions: [
+        basicSetup,
+        lang,
+        macosTheme(darkMode),
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged && onChange) onChange()
+        }),
+      ],
+    }),
     parent,
   })
 }
 
-// --- Preview ---
+function replaceEditorContent(editor, text) {
+  editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: text } })
+}
 
+// --- Preview ---
 function schedulePreview() {
   clearTimeout(debounceTimer)
   debounceTimer = setTimeout(updatePreview, 300)
@@ -162,29 +132,28 @@ async function updatePreview() {
   const content = asciidocEditor.state.doc.toString()
   const style = styleEditor.state.doc.toString()
   const result = await window.convertAsciidoc(content)
-  lastHtmlFromAsciidoc = result
+  lastHtml = result
 
-  // Update HTML editor if it's not the source of the change
-  if (document.querySelector('[data-tab="html"]') &&
-      !document.querySelector('[data-tab="html"]').classList.contains("editing")) {
-    htmlEditor.dispatch({
-      changes: { from: 0, to: htmlEditor.state.doc.length, insert: result }
-    })
+  // Sync HTML editor
+  const htmlTab = document.querySelector('[data-tab="html"]')
+  if (htmlTab && !htmlTab.classList.contains("editing")) {
+    replaceEditorContent(htmlEditor, result)
   }
 
   renderPreview(result, style)
   markModified()
 }
 
-function renderPreview(htmlContent, style) {
+function renderPreview(h, style) {
   const preview = document.getElementById("preview")
   if (!preview) return
   const doc = preview.contentDocument
+  const scrollTop = doc?.documentElement?.scrollTop || 0
   doc.open()
-  doc.write(
-    "<html><head><style>" + style + "</style></head><body>" + htmlContent + "</body></html>"
-  )
+  doc.write(`<html><head><style>${style}</style></head><body>${h}</body></html>`)
   doc.close()
+  // Restaurer la position de scroll
+  doc.documentElement.scrollTop = scrollTop
 }
 
 function markModified() {
@@ -195,91 +164,136 @@ function markModified() {
 }
 
 function updateStatusBar() {
-  const status = document.getElementById("status-file")
-  if (!status) return
+  const el = document.getElementById("status-file")
+  if (!el) return
   const name = currentFilePath ? currentFilePath.split("/").pop() : "Sans titre"
-  status.textContent = name + (isModified ? " (modifié)" : "")
+  el.textContent = name + (isModified ? " •" : "")
 }
 
-// --- Preview toggle ---
-
+// --- Toggle panels ---
 function togglePreview() {
   previewVisible = !previewVisible
-  const divider = document.getElementById("divider")
-  const previewPanel = document.querySelector(".preview-panel")
-  const toggleBtn = document.getElementById("btn-toggle-preview")
-
-  if (previewVisible) {
-    divider.style.display = ""
-    previewPanel.style.display = ""
-    toggleBtn.textContent = "Masquer aperçu"
-    updatePreview()
-  } else {
-    divider.style.display = "none"
-    previewPanel.style.display = "none"
-    toggleBtn.textContent = "Afficher aperçu"
-  }
+  document.getElementById("divider").style.display = previewVisible ? "" : "none"
+  document.querySelector(".preview-panel").style.display = previewVisible ? "" : "none"
+  document.getElementById("btn-toggle-preview").textContent = previewVisible ? "⊟" : "⊞"
+  if (previewVisible) updatePreview()
+  savePref()
 }
 
-// --- Divider drag ---
+function toggleSidebar() {
+  sidebarVisible = !sidebarVisible
+  document.querySelector(".sidebar").classList.toggle("hidden", !sidebarVisible)
+  savePref()
+  if (sidebarVisible) loadSidebar()
+}
 
-function setupDivider() {
-  const divider = document.getElementById("divider")
-  const panels = document.querySelector(".panels")
-  const editorPanel = document.querySelector(".editor-panel")
-  let dragging = false
+function toggleDarkMode() {
+  darkMode = !darkMode
+  document.body.classList.toggle("dark", darkMode)
+  // Recréer les éditeurs avec le bon thème
+  recreateEditors()
+  savePref()
+}
 
-  divider.addEventListener("mousedown", (e) => {
-    dragging = true
-    document.body.style.cursor = "col-resize"
-    document.body.style.userSelect = "none"
-    e.preventDefault()
-  })
+function toggleZenMode() {
+  zenMode = !zenMode
+  document.body.classList.toggle("zen", zenMode)
+}
 
-  document.addEventListener("mousemove", (e) => {
-    if (!dragging) return
-    const rect = panels.getBoundingClientRect()
-    const pct = ((e.clientX - rect.left) / rect.width) * 100
-    const clamped = Math.max(20, Math.min(80, pct))
-    editorPanel.style.flex = "none"
-    editorPanel.style.width = clamped + "%"
-  })
+function recreateEditors() {
+  const adocContent = asciidocEditor.state.doc.toString()
+  const htmlContent = htmlEditor.state.doc.toString()
+  const cssContent = styleEditor.state.doc.toString()
 
-  document.addEventListener("mouseup", () => {
-    if (dragging) {
-      dragging = false
-      document.body.style.cursor = ""
-      document.body.style.userSelect = ""
+  asciidocEditor.destroy()
+  htmlEditor.destroy()
+  styleEditor.destroy()
+
+  asciidocEditor = createEditor(
+    document.getElementById("editor-asciidoc"),
+    StreamLanguage.define(asciidoc), adocContent, schedulePreview
+  )
+  htmlEditor = createEditor(
+    document.getElementById("editor-html"),
+    html(), htmlContent, null
+  )
+  styleEditor = createEditor(
+    document.getElementById("editor-style"),
+    css(), cssContent, schedulePreview
+  )
+}
+
+// --- Sidebar (Git + Recent files) ---
+async function loadSidebar() {
+  const sidebar = document.querySelector(".sidebar-content")
+  if (!sidebar) return
+
+  let html = ""
+
+  // Recent files
+  try {
+    const recent = JSON.parse(await window.getRecentFiles(""))
+    if (recent.length > 0) {
+      html += `<div class="sidebar-section"><div class="sidebar-title">Fichiers récents</div>`
+      for (const f of recent) {
+        const name = f.split("/").pop()
+        html += `<div class="sidebar-item" data-path="${f}" onclick="window.prism.openPath('${f}')">${name}</div>`
+      }
+      html += `</div>`
     }
-  })
+  } catch (e) {}
+
+  // Git
+  try {
+    const info = JSON.parse(await window.getGitInfo(""))
+    if (info.branch) {
+      html += `<div class="sidebar-section"><div class="sidebar-title">Git — ${info.branch}</div>`
+      if (!info.clean) {
+        html += `<div class="sidebar-hint">${info.modified} modifié(s), ${info.untracked} non suivi(s)</div>`
+      } else {
+        html += `<div class="sidebar-hint">Aucune modification</div>`
+      }
+
+      // Fichiers .adoc du dépôt
+      const files = JSON.parse(await window.getGitFileTree(""))
+      for (const f of files) {
+        html += `<div class="sidebar-item" onclick="window.prism.openPath('${f.path}')">${f.name}</div>`
+      }
+      html += `</div>`
+    }
+  } catch (e) {}
+
+  if (!html) html = `<div class="sidebar-hint">Ouvrez un fichier pour voir le dépôt Git</div>`
+  sidebar.innerHTML = html
 }
 
 // --- File operations ---
-
 async function doOpen() {
   const result = await window.openFile("")
   if (!result) return
+  handleOpenResult(result)
+}
+
+async function doOpenPath(path) {
+  const result = await window.openFilePath(path)
+  if (!result) return
+  handleOpenResult(result)
+}
+
+function handleOpenResult(result) {
   const data = JSON.parse(result)
   if (data.error) { alert("Erreur : " + data.error); return }
-  if (!data.content && data.content !== "") return
+  if (data.content === undefined) return
 
   currentFilePath = data.path || ""
   isModified = false
-
-  // Set AsciiDoc content
-  asciidocEditor.dispatch({
-    changes: { from: 0, to: asciidocEditor.state.doc.length, insert: data.content }
-  })
-
-  // Set CSS if present
-  if (data.css) {
-    styleEditor.dispatch({
-      changes: { from: 0, to: styleEditor.state.doc.length, insert: data.css }
-    })
-  }
+  replaceEditorContent(asciidocEditor, data.content)
+  if (data.css) replaceEditorContent(styleEditor, data.css)
 
   updateStatusBar()
+  updateGitStatus()
   updatePreview()
+  if (sidebarVisible) loadSidebar()
 }
 
 async function doSave() {
@@ -292,6 +306,7 @@ async function doSave() {
   if (data.path) currentFilePath = data.path
   isModified = false
   updateStatusBar()
+  updateGitStatus()
 }
 
 async function doSaveAs() {
@@ -307,99 +322,151 @@ async function doSaveAs() {
 }
 
 async function doNew() {
-  if (isModified && !confirm("Le fichier a été modifié. Créer un nouveau fichier sans sauvegarder ?")) return
+  if (isModified && !confirm("Fichier modifié. Continuer sans sauvegarder ?")) return
   await window.newFile("")
   currentFilePath = ""
   isModified = false
-  asciidocEditor.dispatch({
-    changes: { from: 0, to: asciidocEditor.state.doc.length, insert: defaultAsciidoc }
-  })
-  styleEditor.dispatch({
-    changes: { from: 0, to: styleEditor.state.doc.length, insert: defaultCss }
-  })
+  replaceEditorContent(asciidocEditor, defaultAsciidoc)
+  replaceEditorContent(styleEditor, defaultCss)
   updateStatusBar()
   updatePreview()
 }
 
-// --- Exports ---
+// --- Git status ---
+async function updateGitStatus() {
+  const el = document.getElementById("status-git")
+  if (!el) return
+  try {
+    const info = JSON.parse(await window.getGitInfo(""))
+    if (info.branch) {
+      el.textContent = `⎇ ${info.branch}` + (info.clean ? "" : ` (+${info.modified})`)
+      el.style.display = ""
+    } else {
+      el.style.display = "none"
+    }
+  } catch (e) {
+    el.style.display = "none"
+  }
+}
 
+// --- Exports ---
 async function doExport(fn, label) {
   const content = asciidocEditor.state.doc.toString()
   const style = styleEditor.state.doc.toString()
   const result = await fn(content, style)
   if (!result) return
   const data = JSON.parse(result)
-  if (data.error) { alert("Erreur export " + label + " : " + data.error); return }
-  if (data.success) alert(label + " exporté : " + data.path)
+  if (data.error) { alert("Erreur " + label + " : " + data.error); return }
+  if (data.success) alert(label + " exporté : " + (data.path || data.results?.join("\n")))
 }
 
-// --- Keyboard shortcuts ---
+// --- Preferences ---
+function savePref() {
+  window.savePreferences(JSON.stringify({
+    dark_mode: darkMode,
+    preview_visible: previewVisible,
+    sidebar_visible: sidebarVisible,
+  }))
+}
 
-function setupShortcuts() {
-  document.addEventListener("keydown", (e) => {
-    const mod = e.metaKey || e.ctrlKey
-
-    if (mod && e.key === "s" && !e.shiftKey) {
-      e.preventDefault()
-      doSave()
-    } else if (mod && e.key === "s" && e.shiftKey) {
-      e.preventDefault()
-      doSaveAs()
-    } else if (mod && e.key === "o") {
-      e.preventDefault()
-      doOpen()
-    } else if (mod && e.key === "n") {
-      e.preventDefault()
-      doNew()
-    } else if (mod && e.key === "p") {
-      e.preventDefault()
-      togglePreview()
-    } else if (mod && e.key === "e") {
-      e.preventDefault()
-      doExport(window.exportHtml, "HTML")
+// --- Scroll sync ---
+function setupScrollSync() {
+  const editorDom = asciidocEditor.dom
+  editorDom.addEventListener("scroll", () => {
+    const preview = document.getElementById("preview")
+    if (!preview || !previewVisible) return
+    const editorScrollable = editorDom.querySelector(".cm-scroller")
+    if (!editorScrollable) return
+    const pct = editorScrollable.scrollTop / (editorScrollable.scrollHeight - editorScrollable.clientHeight || 1)
+    const previewDoc = preview.contentDocument?.documentElement
+    if (previewDoc) {
+      previewDoc.scrollTop = pct * (previewDoc.scrollHeight - previewDoc.clientHeight)
     }
   })
 }
 
-// --- Initialization ---
+// --- Keyboard shortcuts ---
+function setupShortcuts() {
+  document.addEventListener("keydown", (e) => {
+    const mod = e.metaKey || e.ctrlKey
 
-window.addEventListener("DOMContentLoaded", () => {
+    if (mod && e.key === "s" && !e.shiftKey) { e.preventDefault(); doSave() }
+    else if (mod && e.key === "s" && e.shiftKey) { e.preventDefault(); doSaveAs() }
+    else if (mod && e.key === "o") { e.preventDefault(); doOpen() }
+    else if (mod && e.key === "n") { e.preventDefault(); doNew() }
+    else if (mod && e.key === "p" && !e.shiftKey) { e.preventDefault(); togglePreview() }
+    else if (mod && e.key === "b") { e.preventDefault(); toggleSidebar() }
+    else if (mod && e.key === "e" && !e.shiftKey) { e.preventDefault(); doExport(window.exportHtml, "HTML") }
+    else if (mod && e.shiftKey && e.key === "e") { e.preventDefault(); doExport(window.exportAll, "Tous les formats") }
+    else if (mod && e.key === "d") { e.preventDefault(); toggleDarkMode() }
+    else if (e.key === "Escape" && zenMode) { toggleZenMode() }
+    else if (mod && e.key === "Enter") { e.preventDefault(); toggleZenMode() }
+  })
+}
+
+// --- Divider ---
+function setupDivider() {
+  const divider = document.getElementById("divider")
+  const panels = document.querySelector(".panels")
+  const editorPanel = document.querySelector(".editor-panel")
+  let dragging = false
+
+  divider.addEventListener("mousedown", (e) => {
+    dragging = true
+    document.body.style.cursor = "col-resize"
+    document.body.style.userSelect = "none"
+    e.preventDefault()
+  })
+  document.addEventListener("mousemove", (e) => {
+    if (!dragging) return
+    const rect = panels.getBoundingClientRect()
+    const sidebarW = sidebarVisible ? document.querySelector(".sidebar").offsetWidth : 0
+    const pct = ((e.clientX - rect.left - sidebarW) / (rect.width - sidebarW)) * 100
+    const clamped = Math.max(20, Math.min(80, pct))
+    editorPanel.style.flex = "none"
+    editorPanel.style.width = clamped + "%"
+  })
+  document.addEventListener("mouseup", () => {
+    if (dragging) { dragging = false; document.body.style.cursor = ""; document.body.style.userSelect = "" }
+  })
+}
+
+// --- Init ---
+window.addEventListener("DOMContentLoaded", async () => {
+  // Load preferences
+  try {
+    const prefs = JSON.parse(await window.getPreferences(""))
+    darkMode = prefs.dark_mode || false
+    previewVisible = prefs.preview_visible !== false
+    sidebarVisible = prefs.sidebar_visible || false
+    if (darkMode) document.body.classList.add("dark")
+  } catch (e) {}
+
   // Create editors
   asciidocEditor = createEditor(
     document.getElementById("editor-asciidoc"),
-    StreamLanguage.define(asciidoc),
-    defaultAsciidoc,
-    () => { schedulePreview() }
+    StreamLanguage.define(asciidoc), defaultAsciidoc, schedulePreview
   )
-
   htmlEditor = createEditor(
     document.getElementById("editor-html"),
-    html(),
-    "",
-    null // HTML changes don't auto-update for now (V0.2: read-only-ish)
+    html(), "", null
   )
-
   styleEditor = createEditor(
     document.getElementById("editor-style"),
-    css(),
-    defaultCss,
-    () => { schedulePreview() }
+    css(), defaultCss, schedulePreview
   )
 
   // Tabs
-  document.querySelectorAll(".tab").forEach((tab) => {
+  document.querySelectorAll(".tab[data-group]").forEach((tab) => {
     tab.addEventListener("click", () => {
       const group = tab.dataset.group
-      if (!group) return
       document.querySelectorAll(`.tab[data-group="${group}"]`).forEach((t) => t.classList.remove("active"))
       tab.classList.add("active")
       const target = tab.dataset.tab
-
       if (group === "editor") {
         document.getElementById("editor-asciidoc").classList.toggle("hidden", target !== "asciidoc")
         document.getElementById("editor-html").classList.toggle("hidden", target !== "html")
         document.getElementById("editor-style").classList.toggle("hidden", target !== "style")
-        // Refresh visible editor
         if (target === "asciidoc") asciidocEditor.requestMeasure()
         else if (target === "html") htmlEditor.requestMeasure()
         else styleEditor.requestMeasure()
@@ -414,20 +481,27 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-export-html").addEventListener("click", () => doExport(window.exportHtml, "HTML"))
   document.getElementById("btn-export-pdf").addEventListener("click", () => doExport(window.exportPdf, "PDF"))
   document.getElementById("btn-export-epub").addEventListener("click", () => doExport(window.exportEpub, "EPUB"))
+  document.getElementById("btn-export-all").addEventListener("click", () => doExport(window.exportAll, "Tous"))
   document.getElementById("btn-toggle-preview").addEventListener("click", togglePreview)
+  document.getElementById("btn-toggle-sidebar").addEventListener("click", toggleSidebar)
+  document.getElementById("btn-dark-mode").addEventListener("click", toggleDarkMode)
+  document.getElementById("btn-zen").addEventListener("click", toggleZenMode)
 
-  // Divider
+  // Apply initial state
+  if (!previewVisible) togglePreview()
+  if (sidebarVisible) {
+    document.querySelector(".sidebar").classList.remove("hidden")
+    loadSidebar()
+  }
+
   setupDivider()
-
-  // Shortcuts
   setupShortcuts()
-
-  // Status bar
   updateStatusBar()
-
-  // First render
   updatePreview()
+
+  // Scroll sync after first render
+  setTimeout(setupScrollSync, 500)
 })
 
 // Expose
-window.prism = { updatePreview, togglePreview }
+window.prism = { updatePreview, togglePreview, toggleSidebar, openPath: doOpenPath }
