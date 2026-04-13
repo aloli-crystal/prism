@@ -8,7 +8,10 @@ module Prism
   VERSION = "1.0.0"
 
   def self.run
-    app = App.new
+    # Support CLI : prm <fichier> ou prm <dossier>
+    file_arg = ARGV.first? if ARGV.size > 0
+
+    app = App.new(file_arg)
     app.start
   end
 end

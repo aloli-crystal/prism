@@ -11,19 +11,41 @@ module Prism
     @preferences : Preferences
     @git_repo : Git::Repository? = nil
 
-    def initialize
+    @initial_file : String? = nil
+
+    def initialize(file_arg : String? = nil)
       @recent_files = RecentFiles.new
       @preferences = Preferences.new
       @webview = Webview::Webview.new(debug: true, title: "Prism — Sans titre")
       @webview.size(@preferences.window_width, @preferences.window_height, Webview::SizeHints::NONE)
+      @initial_file = resolve_file_arg(file_arg)
       setup_bindings
     end
 
     def start
       @webview.html = UI::Html.page
+      # Si un fichier a été passé en argument, l'ouvrir après le chargement
+      if file = @initial_file
+        json = open_file_at(file)
+        @webview.eval("setTimeout(() => { if (window.prism && window.prism.loadFromCli) window.prism.loadFromCli(#{json.to_json}); }, 300);")
+      end
       @webview.run
       @preferences.save
       @webview.destroy
+    end
+
+    private def resolve_file_arg(arg : String?) : String?
+      return nil unless arg
+      path = File.expand_path(arg)
+      if File.directory?(path)
+        # Si c'est un dossier, chercher le premier .adoc
+        adoc = Dir.glob(File.join(path, "*.adoc")).first?
+        adoc || Dir.glob(File.join(path, "**/*.adoc")).first?
+      elsif File.exists?(path)
+        path
+      else
+        nil
+      end
     end
 
     private def setup_bindings

@@ -1,0 +1,176 @@
+= Prism — Guide d'utilisation
+:author: aloli-crystal
+:version: 1.0.0
+:toc:
+:toc-title: Sommaire
+:sectnums:
+
+== Installation
+
+=== Depuis le DMG
+
+. Télécharger `Prism.dmg` depuis la page https://github.com/aloli-crystal/prism/releases[Releases]
+. Ouvrir le DMG
+. Glisser *Prism* vers le dossier *Applications*
+. Au premier lancement : clic droit sur Prism > *Ouvrir*
+
+NOTE: macOS affiche un avertissement car l'application n'est pas notarisée par Apple. Le clic droit > Ouvrir contourne cette restriction. Alternativement : `xattr -cr /Applications/Prism.app`
+
+=== Depuis les sources
+
+[source,bash]
+----
+git clone https://github.com/aloli-crystal/prism.git
+cd prism
+shards install
+crystal build src/prism.cr -o bin/prism --release
+----
+
+=== Commande terminal `prm`
+
+Pour lancer Prism depuis le terminal :
+
+[source,bash]
+----
+sudo ./scripts/install-cli.sh
+----
+
+Puis :
+
+[source,bash]
+----
+prm                    # Nouveau document
+prm mon-fichier.adoc   # Ouvrir un fichier
+prm .                  # Ouvrir le premier .adoc du dossier courant
+prm ~/mes-docs/        # Ouvrir le premier .adoc du dossier
+----
+
+== Interface
+
+L'interface de Prism est composée de plusieurs zones :
+
+....
+┌─────────────────────────────────────────────────┐
+│ Barre d'outils (fichiers, exports, options)     │
+├─────────────────────────────────────────────────┤
+│ Fil d'Ariane (navigation par sections)          │
+├─────────────────────────────────────────────────┤
+│ Barre de formatage (gras, titres, listes, etc.) │
+├───────┬─────────────────┬───┬──────────────┬────┤
+│       │                 │   │              │    │
+│ Side  │  Éditeur        │ D │ Prévisu-     │Mini│
+│ bar   │  (AsciiDoc /    │ i │ alisation    │map │
+│       │   HTML / Style) │ v │              │    │
+│       │                 │   │              │    │
+├───────┴─────────────────┴───┴──────────────┴────┤
+│ Barre de statut (fichier, Git, position)        │
+└─────────────────────────────────────────────────┘
+....
+
+=== Onglets de l'éditeur
+
+AsciiDoc:: L'éditeur principal pour rédiger en AsciiDoc
+HTML:: Affiche le HTML généré, synchronisé avec l'éditeur AsciiDoc
+Style:: Éditeur CSS pour personnaliser le rendu du document
+
+=== Minimap
+
+La minimap sur le côté droit de l'éditeur offre une vue d'ensemble du document. Les titres sont mis en évidence en bleu. Cliquez sur la minimap pour naviguer rapidement.
+
+=== Fil d'Ariane (Breadcrumb)
+
+Le fil d'Ariane sous la barre d'outils affiche la hiérarchie des sections à la position du curseur. Cliquez sur un élément pour y naviguer.
+
+== Raccourcis clavier
+
+[cols="1,2", options="header"]
+|===
+| Raccourci | Action
+
+| Cmd+N | Nouveau fichier
+| Cmd+O | Ouvrir un fichier
+| Cmd+S | Sauvegarder
+| Cmd+Shift+S | Sauvegarder sous
+| Cmd+F | Chercher (dans l'éditeur)
+| Cmd+Shift+H | Chercher et remplacer
+| Cmd+E | Exporter en HTML
+| Cmd+Shift+E | Exporter dans tous les formats
+| Cmd+P | Afficher/masquer la prévisualisation
+| Cmd+B | Afficher/masquer la sidebar
+| Cmd+M | Afficher/masquer la minimap
+| Cmd+D | Basculer thème clair/sombre
+| Cmd+Enter | Mode zen (écriture sans distraction)
+| Escape | Quitter le mode zen
+| Cmd+Shift+B | Gras
+| Cmd+I | Italique
+|===
+
+== Formatage
+
+=== Barre de formatage
+
+La barre de formatage permet d'insérer des éléments AsciiDoc sans mémoriser la syntaxe :
+
+[cols="1,1,2", options="header"]
+|===
+| Bouton | Syntaxe insérée | Résultat
+
+| *G* | `\*texte*` | *texte en gras*
+| _I_ | `\_texte_` | _texte en italique_
+| M | `\`texte`` | `texte monospace`
+| H1, H2, H3 | `= `, `== `, `=== ` | Titres de niveau 1, 2, 3
+| • | `* ` | Liste à puces
+| 1. | `. ` | Liste numérotée
+| 🔗 | `https://...[lien]` | Lien hypertexte
+| 🖼 | `image::...[alt]` | Image
+| { } | Bloc de code | Bloc source
+| ❝ | Bloc citation | Citation
+| ⊞ | Tableau | Tableau AsciiDoc
+| ℹ | `NOTE: ` | Admonition
+|===
+
+== Exports
+
+Prism peut exporter votre document dans trois formats :
+
+HTML:: Document HTML standalone avec le style personnalisé embarqué
+PDF:: Via crystal-asciidoctor-pdf
+EPUB:: Via crystal-asciidoctor-epub3
+
+Le bouton *Tout* exporte les trois formats simultanément, en utilisant le même nom de base que le fichier source.
+
+La feuille de style de l'onglet *Style* est appliquée à l'export HTML.
+
+== Intégration Git
+
+Quand vous ouvrez un fichier situé dans un dépôt Git, Prism détecte automatiquement le dépôt et affiche :
+
+* La *branche courante* dans la barre de statut
+* Le *nombre de fichiers modifiés*
+* Les *fichiers .adoc du dépôt* dans la sidebar
+
+== Préférences
+
+Les préférences sont sauvegardées automatiquement dans `~/Library/Application Support/Prism/` :
+
+* Thème clair/sombre
+* Visibilité de la prévisualisation et de la sidebar
+* Fichiers récemment ouverts
+
+== Dépannage
+
+=== "L'application ne peut pas être ouverte car le développeur ne peut pas être vérifié"
+
+C'est normal pour une application non notarisée. Solutions :
+
+. Clic droit sur l'application > *Ouvrir*
+. Ou dans le terminal : `xattr -cr /Applications/Prism.app`
+
+=== L'export PDF ou EPUB échoue
+
+Vérifiez que les shards `crystal-asciidoctor-pdf` et `crystal-asciidoctor-epub3` sont bien installés :
+
+[source,bash]
+----
+cd prism && shards install
+----

@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [development, production]
+  pull_request:
+    branches: [development]
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: latest
+
+      - name: Install dependencies
+        run: shards install
+
+      - name: Format check
+        run: crystal tool format --check src/ spec/
+
+      - name: Run tests
+        run: crystal spec
+
+      - name: Build check
+        run: crystal build src/prism.cr -o bin/prism --no-debug
+
+  build-app:
+    runs-on: macos-latest
+    needs: test
+    if: github.ref == 'refs/heads/production' || startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Crystal
+        uses: crystal-lang/install-crystal@v1
+        with:
+          crystal: latest
+
+      - name: Install dependencies
+        run: shards install
+
+      - name: Install rsvg-convert
+        run: brew install librsvg
+
+      - name: Generate icon
+        run: |
+          mkdir -p build/AppIcon.iconset
+          rsvg-convert -w 1024 -h 1024 assets/logo.svg -o build/icon_1024.png
+          for size in 16 32 64 128 256 512; do
+            sips -z $size $size build/icon_1024.png --out "build/AppIcon.iconset/icon_${size}x${size}.png"
+          done
+          for size in 32 64 128 256 512 1024; do
+            half=$((size / 2))
+            sips -z $size $size build/icon_1024.png --out "build/AppIcon.iconset/icon_${half}x${half}@2x.png"
+          done
+          iconutil -c icns build/AppIcon.iconset -o assets/AppIcon.icns
+
+      - name: Build .app and DMG
+        run: ./scripts/build-app.sh ${{ github.ref_name }}
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: Prism.dmg
+          path: build/Prism.dmg
+
+      - name: Upload to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/Prism.dmg
