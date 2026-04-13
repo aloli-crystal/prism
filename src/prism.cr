@@ -1,8 +1,9 @@
 require "webview"
+require "crystal-asciidoctor"
 require "./prism/app"
 
 module Prism
-  VERSION = "0.1.0"
+  VERSION = "0.2.0"
 
   def self.run
     app = App.new

@@ -1,7 +1,6 @@
 module Prism
   module UI
     module Html
-      # Le bundle JS est embarqué dans le binaire à la compilation
       EDITOR_JS = {{ read_file("assets/editor.bundle.js") }}
 
       def self.page : String
@@ -19,23 +18,31 @@ module Prism
                 <polygon points="8,4 12,2 16,4 18,10 16,18 12,20 8,18 6,10" fill="none" stroke="#6e6e73" stroke-width="1.4" stroke-linejoin="round"/>
                 <polygon points="12,2 12,20 8,18 8,4" fill="#a0aec0" opacity="0.3"/>
                 <polygon points="12,2 16,4 16,18 12,20" fill="#718096" opacity="0.2"/>
-                <line x1="6,10" y1="0" x2="18,10" y2="0" stroke="#0071e3" stroke-width="1" opacity="0.5"/>
               </svg>
               <span class="app-title">Prism</span>
             </div>
             <div class="toolbar-actions">
-              <button id="btn-export-pdf">Export PDF</button>
-              <button id="btn-export-epub">Export EPUB</button>
+              <button id="btn-new" title="Nouveau (Cmd+N)">Nouveau</button>
+              <button id="btn-open" title="Ouvrir (Cmd+O)">Ouvrir</button>
+              <button id="btn-save" title="Sauvegarder (Cmd+S)">Sauvegarder</button>
+              <span class="toolbar-sep"></span>
+              <button id="btn-export-html" title="Export HTML (Cmd+E)">HTML</button>
+              <button id="btn-export-pdf" title="Export PDF">PDF</button>
+              <button id="btn-export-epub" title="Export EPUB">EPUB</button>
+              <span class="toolbar-sep"></span>
+              <button id="btn-toggle-preview" title="Afficher/Masquer (Cmd+P)">Masquer aperçu</button>
             </div>
           </div>
 
           <div class="panels">
             <div class="panel editor-panel">
               <div class="panel-header">
-                <span class="tab active" data-tab="asciidoc">AsciiDoc</span>
-                <span class="tab" data-tab="style">Style</span>
+                <span class="tab active" data-tab="asciidoc" data-group="editor">AsciiDoc</span>
+                <span class="tab" data-tab="html" data-group="editor">HTML</span>
+                <span class="tab" data-tab="style" data-group="editor">Style</span>
               </div>
               <div id="editor-asciidoc" class="editor-container"></div>
+              <div id="editor-html" class="editor-container hidden"></div>
               <div id="editor-style" class="editor-container hidden"></div>
             </div>
 
@@ -47,6 +54,15 @@ module Prism
               </div>
               <iframe id="preview" sandbox="allow-same-origin"></iframe>
             </div>
+          </div>
+
+          <div class="status-bar">
+            <span id="status-file">Sans titre</span>
+            <span class="status-right">
+              <span class="shortcut-hint">Cmd+S sauver</span>
+              <span class="shortcut-hint">Cmd+O ouvrir</span>
+              <span class="shortcut-hint">Cmd+P aperçu</span>
+            </span>
           </div>
 
           <script>#{EDITOR_JS}</script>
@@ -69,11 +85,12 @@ module Prism
           overflow: hidden;
         }
 
+        /* --- Toolbar --- */
         .toolbar {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 6px 16px;
+          padding: 5px 12px;
           background: linear-gradient(180deg, #fafafa 0%, #f0f0f2 100%);
           border-bottom: 1px solid #d2d2d7;
           -webkit-app-region: drag;
@@ -94,21 +111,30 @@ module Prism
 
         .toolbar-actions {
           display: flex;
-          gap: 6px;
+          align-items: center;
+          gap: 4px;
           -webkit-app-region: no-drag;
         }
 
+        .toolbar-sep {
+          width: 1px;
+          height: 18px;
+          background: #d2d2d7;
+          margin: 0 4px;
+        }
+
         .toolbar-actions button {
-          padding: 4px 12px;
+          padding: 3px 10px;
           border: 1px solid #d2d2d7;
           border-radius: 5px;
           background: linear-gradient(180deg, #ffffff 0%, #f5f5f7 100%);
           color: #1d1d1f;
-          font-size: 12px;
+          font-size: 11px;
           font-family: inherit;
           cursor: pointer;
           transition: all 0.15s;
           box-shadow: 0 0.5px 1px rgba(0,0,0,0.05);
+          white-space: nowrap;
         }
 
         .toolbar-actions button:hover {
@@ -120,6 +146,7 @@ module Prism
           box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
         }
 
+        /* --- Panels --- */
         .panels {
           display: flex;
           flex: 1;
@@ -138,6 +165,7 @@ module Prism
           cursor: col-resize;
           background: #e5e5e7;
           transition: background 0.15s;
+          flex-shrink: 0;
         }
 
         .divider:hover {
@@ -152,18 +180,19 @@ module Prism
           border-bottom: 1px solid #e5e5e7;
           font-size: 12px;
           color: #86868b;
-          min-height: 32px;
+          min-height: 30px;
           align-items: stretch;
         }
 
         .tab {
-          padding: 0 14px;
+          padding: 0 12px;
           cursor: pointer;
           border-bottom: 2px solid transparent;
           display: flex;
           align-items: center;
           transition: all 0.15s;
           user-select: none;
+          font-size: 11px;
         }
 
         .tab.active {
@@ -192,7 +221,29 @@ module Prism
           background: #ffffff;
         }
 
-        /* Scrollbar macOS-like */
+        /* --- Status bar --- */
+        .status-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 2px 12px;
+          background: #f0f0f2;
+          border-top: 1px solid #d2d2d7;
+          font-size: 11px;
+          color: #86868b;
+          min-height: 22px;
+        }
+
+        .status-right {
+          display: flex;
+          gap: 12px;
+        }
+
+        .shortcut-hint {
+          opacity: 0.6;
+        }
+
+        /* --- Scrollbar macOS --- */
         ::-webkit-scrollbar {
           width: 8px;
           height: 8px;
