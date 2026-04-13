@@ -1,0 +1,195 @@
+= Prism — Fiche de test v1.0
+:author: Philippe
+:date: 2026-04-13
+:toc:
+:toc-title: Sommaire
+
+== Instructions
+
+Lancer l'application puis tester chaque point ci-dessous.
+Marquer *[x]* quand le test passe, *[-]* en cas de problème, et noter les observations.
+
+== 1. Lancement
+
+* [ ] L'application s'ouvre sans erreur
+* [ ] La fenêtre fait environ 1280x820
+* [ ] Le menu macOS s'affiche en haut (Prism, Fichier, Édition, Insertion, Affichage, Export)
+* [ ] Le contenu par défaut est affiché dans l'éditeur
+* [ ] La prévisualisation affiche le rendu HTML à droite
+* [ ] La barre de statut en bas affiche "Sans titre"
+* [ ] Le fil d'Ariane affiche "Document"
+
+== 2. Menu
+
+=== Menu Prism
+
+* [ ] "À propos de Prism" affiche une boîte de dialogue
+* [ ] "Thème clair/sombre" bascule le thème
+* [ ] "Mode zen" masque tout sauf l'éditeur
+
+=== Menu Fichier
+
+* [ ] "Nouveau" (Cmd+N) crée un nouveau document vide
+* [ ] "Ouvrir…" (Cmd+O) affiche le dialogue macOS et ouvre un .adoc
+* [ ] "Ouvrir récent…" ouvre la sidebar
+* [ ] "Enregistrer" (Cmd+S) sauvegarde (ou demande un nom si nouveau)
+* [ ] "Enregistrer sous…" (Cmd+Shift+S) demande un nouveau nom
+
+=== Menu Édition
+
+* [ ] "Annuler" (Cmd+Z) fonctionne dans l'éditeur
+* [ ] "Copier" / "Coller" fonctionnent
+* [ ] "Rechercher…" (Cmd+F) ouvre la barre de recherche
+
+=== Menu Insertion
+
+* [ ] "Gras" insère `*...*` autour de la sélection
+* [ ] "Italique" insère `_..._` autour de la sélection
+* [ ] "Monospace" insère des backticks
+* [ ] "Titre 1" / "Titre 2" / "Titre 3" insèrent le bon préfixe
+* [ ] "Liste à puces" insère `* `
+* [ ] "Liste numérotée" insère `. `
+* [ ] "Lien" insère un squelette de lien
+* [ ] "Image" insère un squelette d'image
+* [ ] "Bloc de code" insère un bloc source
+* [ ] "Citation" insère un bloc quote
+* [ ] "Tableau" insère un squelette de tableau
+* [ ] "Note / Admonition" insère `NOTE: `
+
+=== Menu Affichage
+
+* [ ] "Sidebar" (Cmd+B) affiche/masque la sidebar
+* [ ] "Prévisualisation" (Cmd+P) affiche/masque la prévisualisation
+* [ ] "Minimap" (Cmd+M) affiche/masque la minimap
+
+=== Menu Export
+
+* [ ] "HTML" (Cmd+E) exporte un fichier .html
+* [ ] "PDF" exporte un fichier .pdf
+* [ ] "EPUB" exporte un fichier .epub
+* [ ] "Tout exporter" (Cmd+Shift+E) exporte les 3 formats
+
+== 3. Éditeur
+
+=== Onglets
+
+* [ ] L'onglet "AsciiDoc" affiche l'éditeur principal avec coloration syntaxique
+* [ ] L'onglet "HTML" affiche le HTML généré (synchronisé)
+* [ ] L'onglet "Style" affiche l'éditeur CSS
+
+=== Édition
+
+* [ ] La coloration syntaxique AsciiDoc fonctionne (titres, gras, listes)
+* [ ] Les numéros de ligne sont affichés
+* [ ] Undo/Redo fonctionne (Cmd+Z / Cmd+Shift+Z)
+* [ ] La sélection et le copier-coller fonctionnent
+* [ ] Le tab insère correctement
+
+=== Barre de formatage
+
+* [ ] Les boutons G, I, M fonctionnent sur une sélection
+* [ ] Les boutons H1, H2, H3 insèrent au début de la ligne
+* [ ] Les boutons de liste insèrent au début de la ligne
+
+== 4. Prévisualisation
+
+* [ ] Le rendu se met à jour en temps réel à la frappe
+* [ ] Le délai est acceptable (~300ms)
+* [ ] Le scroll de la prévisualisation suit le scroll de l'éditeur
+* [ ] Modifier le CSS dans l'onglet Style met à jour la prévisualisation
+* [ ] Masquer la prévisualisation (Cmd+P) donne plus d'espace à l'éditeur
+* [ ] La réafficher restaure le rendu
+
+== 5. Minimap
+
+* [ ] La minimap affiche une vue d'ensemble du document à droite de l'éditeur
+* [ ] Les titres sont surlignés en bleu dans la minimap
+* [ ] Le viewport (zone visible) est indiqué
+* [ ] Cliquer sur la minimap déplace la vue dans l'éditeur
+* [ ] La minimap se met à jour quand on modifie le document
+
+== 6. Fil d'Ariane (Breadcrumb)
+
+* [ ] Le fil d'Ariane affiche la hiérarchie de sections à la position du curseur
+* [ ] Se déplacer dans le document met à jour le fil d'Ariane
+* [ ] Cliquer sur un élément du fil d'Ariane déplace le curseur vers cette section
+
+== 7. Rechercher / Remplacer
+
+* [ ] Cmd+F ouvre la barre de recherche en haut de l'éditeur
+* [ ] La recherche surligne les occurrences
+* [ ] Les boutons "suivant" / "précédent" fonctionnent
+* [ ] Le mode regex fonctionne
+* [ ] Escape ferme la barre de recherche
+
+== 8. Gestion de fichiers
+
+* [ ] Ouvrir un fichier .adoc charge son contenu
+* [ ] Le CSS associé (même nom, extension .css) est chargé automatiquement
+* [ ] Sauvegarder écrit le fichier .adoc et le .css à côté
+* [ ] Le titre de la fenêtre affiche le nom du fichier
+* [ ] L'indicateur "•" apparaît dans la barre de statut quand le fichier est modifié
+
+== 9. Intégration Git
+
+* [ ] Ouvrir un fichier dans un dépôt Git affiche la branche dans la barre de statut
+* [ ] La sidebar affiche les fichiers .adoc du dépôt
+* [ ] Cliquer sur un fichier dans la sidebar l'ouvre
+
+== 10. Thème sombre
+
+* [ ] Cmd+D bascule entre clair et sombre
+* [ ] L'éditeur, la sidebar, les menus, la barre de statut changent de thème
+* [ ] Le thème est conservé au redémarrage (préférences persistantes)
+
+== 11. Mode zen
+
+* [ ] Cmd+Enter masque tout sauf l'éditeur
+* [ ] Escape sort du mode zen
+* [ ] L'éditeur occupe tout l'espace
+
+== 12. Sidebar
+
+* [ ] Cmd+B ouvre la sidebar à gauche
+* [ ] Les fichiers récents sont listés
+* [ ] Si un dépôt Git est détecté, les fichiers .adoc sont listés
+* [ ] Cliquer sur un fichier l'ouvre
+
+== 13. CLI
+
+* [ ] `./bin/prism` lance l'application avec un document vide
+* [ ] `./bin/prism docs/guide.adoc` ouvre le fichier directement
+* [ ] `./bin/prism .` ouvre le premier .adoc du dossier courant
+
+== 14. Exports
+
+=== HTML
+
+* [ ] L'export HTML génère un fichier .html valide
+* [ ] Le style personnalisé est embarqué dans le HTML
+* [ ] Le fichier s'ouvre correctement dans un navigateur
+
+=== PDF
+
+* [ ] L'export PDF génère un fichier .pdf
+* [ ] Le PDF contient le contenu du document
+* [ ] _Si erreur, noter le message :_ ___________________________
+
+=== EPUB
+
+* [ ] L'export EPUB génère un fichier .epub
+* [ ] Le fichier s'ouvre dans un lecteur EPUB (ex : Livres)
+* [ ] _Si erreur, noter le message :_ ___________________________
+
+== 15. Performance
+
+* [ ] L'application se lance rapidement (< 2s)
+* [ ] La saisie de texte est fluide
+* [ ] La prévisualisation se met à jour sans lag notable
+* [ ] Pas de fuite mémoire visible (utilisation stable dans Moniteur d'activité)
+
+== Observations générales
+
+____
+(Notez ici vos remarques, suggestions, bugs rencontrés)
+____

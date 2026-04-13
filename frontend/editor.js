@@ -537,6 +537,48 @@ function setupShortcuts() {
   })
 }
 
+// --- Menu helpers ---
+function showAbout() {
+  alert("Prism v1.0.0\nEditeur AsciiDoc en Crystal\nhttps://github.com/aloli-crystal/prism")
+}
+
+async function openRecent() {
+  // Ouvrir la sidebar sur les fichiers récents
+  if (!sidebarVisible) toggleSidebar()
+}
+
+function doFind() {
+  openSearchPanel(asciidocEditor)
+}
+
+// --- Menu bar behavior ---
+function setupMenuBar() {
+  // Fermer les menus au clic en dehors
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".menu-item")) {
+      document.querySelectorAll(".menu-item.open").forEach((m) => m.classList.remove("open"))
+    }
+  })
+
+  // Ouvrir/fermer au clic sur le label
+  document.querySelectorAll(".menu-label").forEach((label) => {
+    label.addEventListener("click", (e) => {
+      const item = label.closest(".menu-item")
+      const wasOpen = item.classList.contains("open")
+      document.querySelectorAll(".menu-item.open").forEach((m) => m.classList.remove("open"))
+      if (!wasOpen) item.classList.add("open")
+      e.stopPropagation()
+    })
+  })
+
+  // Fermer le menu après un clic sur une entrée
+  document.querySelectorAll(".menu-entry").forEach((entry) => {
+    entry.addEventListener("click", () => {
+      document.querySelectorAll(".menu-item.open").forEach((m) => m.classList.remove("open"))
+    })
+  })
+}
+
 // --- CLI load ---
 function loadFromCli(jsonStr) {
   try { handleOpenResult(jsonStr) } catch (e) {}
@@ -596,7 +638,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   if (!previewVisible) togglePreview()
   if (sidebarVisible) { document.querySelector(".sidebar").classList.remove("hidden"); loadSidebar() }
 
-  setupDivider(); setupShortcuts(); updateStatusBar(); updatePreview()
+  setupMenuBar(); setupDivider(); setupShortcuts(); updateStatusBar(); updatePreview()
   setTimeout(() => { setupScrollSync(); setupMinimap() }, 500)
 
   // Breadcrumb update on cursor move
@@ -622,4 +664,4 @@ function setupDivider() {
 }
 
 // Expose
-window.prism = { updatePreview, togglePreview, toggleSidebar, openPath: doOpenPath, goToLine, loadFromCli }
+window.prism = { updatePreview, togglePreview, toggleSidebar, openPath: doOpenPath, goToLine, loadFromCli, about: showAbout, find: doFind, saveAs: doSaveAs, openRecent }
