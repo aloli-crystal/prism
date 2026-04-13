@@ -348,15 +348,18 @@ NOTE: La conversion HTML → AsciiDoc (F2.3) est le point le plus complexe. Elle
 * [x] Conversion AsciiDoc → HTML (minimale)
 * [x] Panneaux redimensionnables
 
-=== V0.2 — Fondations
+=== V0.2 — Fondations ✓
 
-* [ ] Intégration de crystal-asciidoctor pour la vraie conversion
-* [ ] Onglet HTML (édition bidirectionnelle AsciiDoc ↔ HTML, sens AsciiDoc→HTML)
-* [ ] Ouvrir / sauvegarder / fermer un fichier
-* [ ] Prévisualisation rétractable (bouton + raccourci)
-* [ ] Exports HTML, PDF, EPUB fonctionnels
-* [ ] Raccourcis clavier essentiels (Cmd+S, Cmd+O, Cmd+E)
-* [ ] Barre de menus
+* [x] Intégration de crystal-asciidoctor pour la vraie conversion
+* [x] Onglet HTML (édition bidirectionnelle AsciiDoc ↔ HTML, sens AsciiDoc→HTML)
+* [x] Ouvrir / sauvegarder / fermer un fichier
+* [x] Prévisualisation rétractable (bouton + raccourci Cmd+P)
+* [x] Exports HTML, PDF, EPUB fonctionnels
+* [x] Raccourcis clavier essentiels (Cmd+S, Cmd+Shift+S, Cmd+O, Cmd+N, Cmd+E, Cmd+P)
+* [x] Barre d'outils (Nouveau, Ouvrir, Sauvegarder, Export HTML/PDF/EPUB, Aperçu)
+* [x] Barre de statut (nom du fichier, état modifié)
+* [x] CSS sauvegardé automatiquement à côté du fichier .adoc
+* [x] Divider fonctionnel (drag pour redimensionner)
 
 === V0.3 — Intégration
 
@@ -365,7 +368,6 @@ NOTE: La conversion HTML → AsciiDoc (F2.3) est le point le plus complexe. Elle
 * [ ] Synchronisation du scroll éditeur ↔ prévisualisation
 * [ ] Autocomplétion AsciiDoc
 * [ ] Fichiers récents
-* [ ] Barre de statut
 * [ ] Style personnalisé appliqué aux exports
 
 === V0.4 — Confort
