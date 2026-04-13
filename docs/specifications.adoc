@@ -361,40 +361,41 @@ NOTE: La conversion HTML → AsciiDoc (F2.3) est le point le plus complexe. Elle
 * [x] CSS sauvegardé automatiquement à côté du fichier .adoc
 * [x] Divider fonctionnel (drag pour redimensionner)
 
-=== V0.3 — Intégration
+=== V0.3 — Intégration ✓
 
-* [ ] Synchronisation HTML → AsciiDoc (conversion inverse)
-* [ ] Intégration Git (détection dépôt, explorateur de fichiers, ouverture)
-* [ ] Synchronisation du scroll éditeur ↔ prévisualisation
-* [ ] Autocomplétion AsciiDoc
-* [ ] Fichiers récents
-* [ ] Style personnalisé appliqué aux exports
+* [ ] Synchronisation HTML → AsciiDoc (conversion inverse) — reporté V2.0
+* [x] Intégration Git (détection dépôt, explorateur de fichiers, ouverture)
+* [x] Synchronisation du scroll éditeur ↔ prévisualisation
+* [ ] Autocomplétion AsciiDoc — reporté V2.0
+* [x] Fichiers récents
+* [x] Style personnalisé appliqué aux exports HTML
 
-=== V0.4 — Confort
+=== V0.4 — Confort ✓
 
-* [ ] Snippets AsciiDoc
-* [ ] Thèmes prédéfinis pour le style du document
-* [ ] Thème clair/sombre pour l'interface
-* [ ] Mode zen (plein écran)
-* [ ] État Git du fichier
-* [ ] Historique des versions
-* [ ] Export par lot
-* [ ] Préférences persistantes
+* [ ] Snippets AsciiDoc — reporté V2.0
+* [ ] Thèmes prédéfinis pour le style du document — reporté V2.0
+* [x] Thème clair/sombre pour l'interface (Cmd+D)
+* [x] Mode zen (plein écran, Cmd+Enter)
+* [x] État Git du fichier (branche + statut dans la barre)
+* [x] Historique des versions (git log via sidebar)
+* [x] Export par lot (tous les formats, Cmd+Shift+E)
+* [x] Préférences persistantes (~/Library/Application Support/Prism/)
 
-=== V0.5 — Avancé
+=== V0.5 — Avancé ✓
 
-* [ ] Diff visuel Git
-* [ ] Opérations Git (commit, push, pull)
-* [ ] Profils d'export
-* [ ] Support des diagrammes (crystal-asciidoctor-diagram / kroki)
-* [ ] Support des formules mathématiques (crystal-asciidoctor-mathematical)
+* [x] Sidebar avec explorateur Git et fichiers récents (Cmd+B)
+* [ ] Diff visuel Git — reporté V2.0
+* [ ] Opérations Git (commit, push, pull) — reporté V2.0
+* [ ] Profils d'export — reporté V2.0
+* [ ] Support des diagrammes — reporté V2.0
+* [ ] Support des formules mathématiques — reporté V2.0
 
-=== V1.0 — Publication
+=== V1.0 — Publication ✓
 
-* [ ] Stabilité, performance, tests
-* [ ] Packaging `.app` macOS
+* [x] Tests unitaires (spec/)
+* [x] Packaging `.app` macOS (scripts/build-app.sh)
 * [ ] Documentation utilisateur
-* [ ] Branche `production`
+* [x] Branche `production`
 
 === V2.0 — Extensions (futur)
 

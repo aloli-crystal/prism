@@ -5,7 +5,7 @@ require "crystal-asciidoctor-epub3/src/asciidoctor_epub"
 require "./prism/app"
 
 module Prism
-  VERSION = "0.2.0"
+  VERSION = "1.0.0"
 
   def self.run
     app = App.new

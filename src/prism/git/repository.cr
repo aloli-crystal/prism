@@ -108,12 +108,10 @@ module Prism
         ""
       end
 
-      private def build_tree(files : Array(String)) : Array(NamedTuple(name: String, path: String, type: String, children: Array(NamedTuple(name: String, path: String, type: String, children: Array(Nil))?)))
-        # Simplification : retourner une liste plate pour le moment
-        # Le frontend construira l'arborescence
+      private def build_tree(files : Array(String))
         files.map do |f|
           full_path = File.join(@root, f)
-          {name: f, path: full_path, type: File.directory?(full_path) ? "dir" : "file", children: [] of Nil}
+          {name: f, path: full_path, type: File.directory?(full_path) ? "dir" : "file"}
         end
       end
     end
