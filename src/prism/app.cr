@@ -166,11 +166,12 @@ module Prism
     private def export_pdf(content : String, stylesheet : String) : String
       path = choose_save_path("document.pdf", "PDF")
       return "" if path.empty?
+      path += ".pdf" unless path.ends_with?(".pdf")
 
-      # TODO V0.2: intégrer crystal-asciidoctor-pdf quand les requires seront stabilisés
-      # doc = Asciidoctor.load(content, {"safe" => "safe"})
-      # AsciidoctorPDF::Converter.new.convert(doc)
-      {error: "Export PDF — intégration en cours"}.to_json
+      doc = Asciidoctor.load(content, {"safe" => "safe", "backend" => "pdf", "outfile" => path})
+      AsciidoctorPDF::Converter.new.convert(doc)
+
+      {success: true, path: path, format: "PDF"}.to_json
     rescue ex
       {error: ex.message}.to_json
     end
@@ -178,12 +179,12 @@ module Prism
     private def export_epub(content : String, stylesheet : String) : String
       path = choose_save_path("document.epub", "EPUB")
       return "" if path.empty?
+      path += ".epub" unless path.ends_with?(".epub")
 
-      # TODO V0.2: intégrer crystal-asciidoctor-epub3 quand les requires seront stabilisés
-      # doc = Asciidoctor.load(content, {"safe" => "safe"})
-      # bytes = AsciidoctorEpub::Converter.new.convert(doc)
-      # File.write(path, bytes)
-      {error: "Export EPUB — intégration en cours"}.to_json
+      doc = Asciidoctor.load(content, {"safe" => "safe"})
+      AsciidoctorEpub::Converter.new.convert_to_file(doc, path)
+
+      {success: true, path: path, format: "EPUB"}.to_json
     rescue ex
       {error: ex.message}.to_json
     end
