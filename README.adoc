@@ -1,0 +1,51 @@
+= Prism
+:uri-logo: assets/logo.svg
+
+image::{uri-logo}[Prism Logo, 280]
+
+**AsciiDoc editor and publisher for Crystal**
+
+Prism est un éditeur AsciiDoc de bureau en pur Crystal avec exportation automatique vers HTML, PDF et EPUB, et un éditeur de style intégré pour personnaliser les rendus.
+
+== Fonctionnalités
+
+* Édition AsciiDoc avec coloration syntaxique
+* Édition de feuille de style pour personnaliser le rendu
+* Prévisualisation HTML en temps réel
+* Export vers HTML, PDF et EPUB
+* Interface native légère (WebKit natif via webview)
+* Pipeline de conversion 100% Crystal (shards aloli-crystal)
+
+== Prérequis
+
+* https://crystal-lang.org[Crystal] >= 1.15.0
+* macOS, Linux ou Windows
+
+== Installation
+
+[source,bash]
+----
+git clone https://github.com/aloli-crystal/prism.git
+cd prism
+shards install
+crystal build src/prism.cr -o bin/prism
+----
+
+== Utilisation
+
+[source,bash]
+----
+./bin/prism
+----
+
+== Architecture
+
+Le backend est entièrement écrit en Crystal et s'appuie sur les shards de l'organisation https://github.com/aloli-crystal[aloli-crystal] pour le traitement AsciiDoc.
+
+L'interface utilise une webview native (WKWebView sur macOS, WebKitGTK sur Linux) pour un rendu léger et intégré au système — aucun serveur HTTP, aucun navigateur externe.
+
+Voir link:docs/recherche.adoc[le document de recherche] pour le détail des choix techniques.
+
+== Licence
+
+MIT

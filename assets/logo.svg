@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="prism-face-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a5568;stop-opacity:0.9"/>
+      <stop offset="100%" style="stop-color:#2d3748;stop-opacity:0.95"/>
+    </linearGradient>
+    <linearGradient id="prism-face-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#718096;stop-opacity:0.85"/>
+      <stop offset="100%" style="stop-color:#4a5568;stop-opacity:0.9"/>
+    </linearGradient>
+    <linearGradient id="prism-face-top" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a0aec0;stop-opacity:0.8"/>
+      <stop offset="100%" style="stop-color:#cbd5e0;stop-opacity:0.85"/>
+    </linearGradient>
+    <linearGradient id="beam-in" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#e2e8f0;stop-opacity:0.6"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.95"/>
+    </linearGradient>
+    <linearGradient id="ray-red" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fc8181"/>
+      <stop offset="100%" style="stop-color:#f56565"/>
+    </linearGradient>
+    <linearGradient id="ray-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f6ad55"/>
+      <stop offset="100%" style="stop-color:#ed8936"/>
+    </linearGradient>
+    <linearGradient id="ray-yellow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#faf089"/>
+      <stop offset="100%" style="stop-color:#ecc94b"/>
+    </linearGradient>
+    <linearGradient id="ray-green" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#68d391"/>
+      <stop offset="100%" style="stop-color:#48bb78"/>
+    </linearGradient>
+    <linearGradient id="ray-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#63b3ed"/>
+      <stop offset="100%" style="stop-color:#4299e1"/>
+    </linearGradient>
+    <linearGradient id="ray-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#b794f4"/>
+      <stop offset="100%" style="stop-color:#9f7aea"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Faisceau entrant (lumiere blanche = fichier AsciiDoc) -->
+  <polygon points="40,220 180,248 180,268 40,250" fill="url(#beam-in)" opacity="0.9"/>
+
+  <!-- Prisme - face gauche -->
+  <polygon points="180,140 180,340 256,380 256,100" fill="url(#prism-face-left)"/>
+
+  <!-- Prisme - face droite -->
+  <polygon points="256,100 256,380 340,340 340,140" fill="url(#prism-face-right)"/>
+
+  <!-- Prisme - face superieure -->
+  <polygon points="180,140 256,100 340,140 256,180" fill="url(#prism-face-top)"/>
+
+  <!-- Reflet sur le prisme -->
+  <polygon points="200,160 240,145 240,200 200,215" fill="white" opacity="0.12"/>
+
+  <!-- Rayons sortants (HTML, PDF, EPUB = spectre de couleurs) -->
+  <polygon points="340,200 480,120 480,135 340,212" fill="url(#ray-red)" opacity="0.9"/>
+  <polygon points="340,218 480,155 480,170 340,230" fill="url(#ray-orange)" opacity="0.9"/>
+  <polygon points="340,236 480,195 480,210 340,248" fill="url(#ray-yellow)" opacity="0.9"/>
+  <polygon points="340,254 480,240 480,255 340,266" fill="url(#ray-green)" opacity="0.9"/>
+  <polygon points="340,272 480,290 480,305 340,284" fill="url(#ray-blue)" opacity="0.9"/>
+  <polygon points="340,290 480,345 480,360 340,302" fill="url(#ray-purple)" opacity="0.9"/>
+
+  <!-- Labels sur les rayons -->
+  <text x="460" y="118" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#f56565" text-anchor="end">HTML</text>
+  <text x="468" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#ecc94b" text-anchor="end">PDF</text>
+  <text x="472" y="355" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#9f7aea" text-anchor="end">EPUB</text>
+
+  <!-- Label entrant -->
+  <text x="42" y="212" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#a0aec0">AsciiDoc</text>
+
+  <!-- Nom du projet -->
+  <text x="256" y="440" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="700" fill="#2d3748" text-anchor="middle" letter-spacing="4">PRISM</text>
+  <text x="256" y="465" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="400" fill="#718096" text-anchor="middle" letter-spacing="2">AsciiDoc Editor for Crystal</text>
+</svg>

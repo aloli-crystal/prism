@@ -1,0 +1,21 @@
+name: prism
+version: 0.1.0
+
+authors:
+  - Philippe <papilip@github>
+
+description: |
+  AsciiDoc editor and publisher for Crystal.
+  Edit, style, and export to HTML, PDF & EPUB.
+
+crystal: ">= 1.15.0"
+
+license: MIT
+
+targets:
+  prism:
+    main: src/prism.cr
+
+dependencies:
+  webview:
+    github: naqvis/webview
