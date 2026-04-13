@@ -1,0 +1,436 @@
+= Prism — Spécifications fonctionnelles
+:author: Philippe
+:date: 2026-04-13
+:version: 0.1.0
+:toc:
+:toc-title: Sommaire
+:sectnums:
+
+== Vision du projet
+
+Prism est un éditeur AsciiDoc de bureau en pur Crystal, conçu pour offrir une expérience d'écriture et de publication complète : éditer, styler, prévisualiser et exporter ses documents vers HTML, PDF et EPUB depuis une interface native et légère.
+
+=== Principes directeurs
+
+* *Pur Crystal* — le pipeline de conversion repose intégralement sur les shards aloli-crystal
+* *Interface native légère* — webview native (WKWebView sur macOS), pas d'Electron ni de serveur HTTP
+* *Édition bidirectionnelle* — l'utilisateur peut modifier le source AsciiDoc ou le rendu HTML, les deux restent synchronisés
+* *Orienté publication* — export vers les trois formats majeurs (HTML, PDF, EPUB) avec personnalisation du style
+* *Intégration Git* — navigation et ouverture de fichiers depuis un dépôt Git
+
+== Architecture technique
+
+=== Stack
+
+[cols="1,2", options="header"]
+|===
+| Couche | Technologie
+
+| Backend / logique métier
+| Crystal
+
+| Interface utilisateur
+| HTML/CSS/JS via webview native (WKWebView macOS, WebKitGTK Linux)
+
+| Éditeur de code
+| CodeMirror 6 + codemirror-asciidoc
+
+| Parsing AsciiDoc
+| crystal-asciidoctor (aloli-crystal)
+
+| Export PDF
+| crystal-asciidoctor-pdf (aloli-crystal)
+
+| Export EPUB
+| crystal-asciidoctor-epub3 (aloli-crystal)
+
+| Coloration syntaxique (export)
+| crystal-rouge (aloli-crystal)
+
+| Communication UI ↔ backend
+| Bindings webview (Crystal ↔ JavaScript)
+|===
+
+=== Schéma d'architecture
+
+....
+┌──────────────────────────────────────────────────────────────┐
+│  Webview native (WKWebView / WebKitGTK)                      │
+│                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌──────────────────────┐ │
+│  │  Éditeur    │  │  Éditeur    │  │  Prévisualisation    │ │
+│  │  AsciiDoc   │⇄│  HTML       │  │  (rendu live)        │ │
+│  │ (CodeMirror)│  │ (CodeMirror)│  │                      │ │
+│  └──────┬──────┘  └──────┬──────┘  └──────────▲───────────┘ │
+│         │                │                     │             │
+│  ┌──────┴────────────────┴─────────────────────┴───────────┐ │
+│  │  Éditeur de style (CodeMirror, mode CSS)                │ │
+│  └─────────────────────────┬───────────────────────────────┘ │
+└────────────────────────────┼─────────────────────────────────┘
+                             │ bindings Crystal ↔ JS
+┌────────────────────────────┼─────────────────────────────────┐
+│  Crystal backend           │                                 │
+│                            │                                 │
+│  ┌─────────────────────────▼───────────────────────────────┐ │
+│  │  Moteur de conversion                                   │ │
+│  │  crystal-asciidoctor (parse, AST, transform)            │ │
+│  └────┬──────────────┬──────────────┬──────────────────────┘ │
+│       │              │              │                         │
+│  ┌────▼────┐   ┌─────▼─────┐  ┌────▼─────┐                  │
+│  │  HTML   │   │   PDF     │  │  EPUB3   │                  │
+│  │ backend │   │  backend  │  │  backend │                  │
+│  └─────────┘   └───────────┘  └──────────┘                  │
+│                                                              │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │  Gestionnaire de fichiers + intégration Git              │ │
+│  └──────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘
+....
+
+== Fonctionnalités
+
+=== F1 — Édition AsciiDoc
+
+[cols="1,3,1", options="header"]
+|===
+| ID | Description | Priorité
+
+| F1.1
+| Éditeur de texte avec coloration syntaxique AsciiDoc (CodeMirror 6 + codemirror-asciidoc)
+| V0.1 ✓
+
+| F1.2
+| Numéros de ligne, undo/redo, sélection, rechercher/remplacer
+| V0.1 ✓
+
+| F1.3
+| Autocomplétion des directives AsciiDoc (include::, image::, :attributs:, etc.)
+| V0.3
+
+| F1.4
+| Pliage des sections (fold)
+| V0.3
+
+| F1.5
+| Snippets AsciiDoc (blocs, tableaux, admonitions)
+| V0.4
+|===
+
+=== F2 — Édition HTML bidirectionnelle
+
+L'utilisateur peut basculer entre l'édition AsciiDoc et l'édition HTML. Les modifications dans un mode se répercutent dans l'autre.
+
+[cols="1,3,1", options="header"]
+|===
+| ID | Description | Priorité
+
+| F2.1
+| Onglet « HTML » avec éditeur CodeMirror (mode HTML) affichant le HTML généré
+| V0.2
+
+| F2.2
+| Synchronisation AsciiDoc → HTML : toute modification AsciiDoc régénère le HTML
+| V0.2
+
+| F2.3
+| Synchronisation HTML → AsciiDoc : toute modification HTML reconvertit vers l'AsciiDoc source
+| V0.3
+
+| F2.4
+| Indicateur visuel du sens de la dernière modification (AsciiDoc→HTML ou HTML→AsciiDoc)
+| V0.3
+
+| F2.5
+| Gestion des conflits : si les deux onglets sont modifiés, proposer une résolution
+| V0.4
+|===
+
+NOTE: La conversion HTML → AsciiDoc (F2.3) est le point le plus complexe. Elle nécessitera un parser HTML→AST puis AST→AsciiDoc. Le shard `crystal-kramdown-asciidoc` (aloli-crystal) peut servir de base pour la conversion inverse, bien qu'il cible Markdown→AsciiDoc.
+
+=== F3 — Prévisualisation
+
+[cols="1,3,1", options="header"]
+|===
+| ID | Description | Priorité
+
+| F3.1
+| Prévisualisation HTML live dans un panneau (iframe), mise à jour avec debounce
+| V0.1 ✓
+
+| F3.2
+| Le panneau de prévisualisation peut être réduit/masqué pour maximiser l'espace d'écriture
+| V0.2
+
+| F3.3
+| Raccourci clavier pour afficher/masquer la prévisualisation
+| V0.2
+
+| F3.4
+| Synchronisation du scroll entre l'éditeur et la prévisualisation
+| V0.3
+
+| F3.5
+| Mode plein écran (zen mode) : éditeur seul, sans chrome
+| V0.4
+|===
+
+=== F4 — Éditeur de style
+
+[cols="1,3,1", options="header"]
+|===
+| ID | Description | Priorité
+
+| F4.1
+| Onglet « Style » avec éditeur CodeMirror (mode CSS)
+| V0.1 ✓
+
+| F4.2
+| Application immédiate du style sur la prévisualisation
+| V0.1 ✓
+
+| F4.3
+| Bibliothèque de thèmes prédéfinis (classique, moderne, académique, etc.)
+| V0.4
+
+| F4.4
+| Import/export de feuilles de style
+| V0.4
+|===
+
+=== F5 — Gestion des fichiers
+
+[cols="1,3,1", options="header"]
+|===
+| ID | Description | Priorité
+
+| F5.1
+| Ouvrir un fichier `.adoc` depuis le système de fichiers (dialogue natif)
+| V0.2
+
+| F5.2
+| Sauvegarder le fichier en cours (Cmd+S / Ctrl+S)
+| V0.2
+
+| F5.3
+| Sauvegarder sous (nouveau nom/emplacement)
+| V0.2
+
+| F5.4
+| Fichiers récents
+| V0.3
+
+| F5.5
+| Détection des modifications non sauvegardées, confirmation avant fermeture
+| V0.2
+
+| F5.6
+| Création d'un nouveau fichier
+| V0.2
+
+| F5.7
+| Gestion de la feuille de style associée (`.css` à côté du `.adoc`, ou embarquée)
+| V0.3
+|===
+
+=== F6 — Intégration Git
+
+[cols="1,3,1", options="header"]
+|===
+| ID | Description | Priorité
+
+| F6.1
+| Détection automatique d'un dépôt Git quand on ouvre un fichier
+| V0.3
+
+| F6.2
+| Explorateur de fichiers du dépôt (arborescence) dans un panneau latéral
+| V0.3
+
+| F6.3
+| Ouvrir un fichier `.adoc` depuis l'arborescence du dépôt
+| V0.3
+
+| F6.4
+| Affichage de l'état Git du fichier (modifié, staged, non suivi)
+| V0.4
+
+| F6.5
+| Historique des versions du fichier (git log)
+| V0.4
+
+| F6.6
+| Diff visuel entre la version courante et un commit précédent
+| V0.5
+
+| F6.7
+| Opérations Git de base : commit, push, pull (via libgit2 ou CLI)
+| V0.5
+|===
+
+=== F7 — Export
+
+[cols="1,3,1", options="header"]
+|===
+| ID | Description | Priorité
+
+| F7.1
+| Export HTML (fichier standalone avec style embarqué)
+| V0.2
+
+| F7.2
+| Export PDF via crystal-asciidoctor-pdf
+| V0.2
+
+| F7.3
+| Export EPUB3 via crystal-asciidoctor-epub3
+| V0.2
+
+| F7.4
+| Choix du répertoire et du nom de fichier de sortie
+| V0.2
+
+| F7.5
+| Application de la feuille de style personnalisée aux exports
+| V0.3
+
+| F7.6
+| Export par lot (tous les formats en une fois)
+| V0.4
+
+| F7.7
+| Profils d'export (configurations nommées et réutilisables)
+| V0.5
+|===
+
+=== F8 — Interface et ergonomie
+
+[cols="1,3,1", options="header"]
+|===
+| ID | Description | Priorité
+
+| F8.1
+| Layout à panneaux redimensionnables (divider drag)
+| V0.1 ✓
+
+| F8.2
+| Panneau de prévisualisation rétractable (bouton et raccourci clavier)
+| V0.2
+
+| F8.3
+| Barre de menus (Fichier, Édition, Affichage, Export, Aide)
+| V0.2
+
+| F8.4
+| Raccourcis clavier pour toutes les actions principales
+| V0.2
+
+| F8.5
+| Barre de statut (nom du fichier, état de sauvegarde, position du curseur, état Git)
+| V0.3
+
+| F8.6
+| Thème clair/sombre pour l'interface
+| V0.4
+
+| F8.7
+| Préférences utilisateur persistantes (taille des panneaux, thème, derniers fichiers)
+| V0.4
+|===
+
+== Feuille de route
+
+=== V0.1 — Prototype ✓
+
+* [x] Fenêtre webview native
+* [x] Éditeur AsciiDoc avec CodeMirror 6 + coloration syntaxique
+* [x] Éditeur de style CSS
+* [x] Prévisualisation HTML live
+* [x] Conversion AsciiDoc → HTML (minimale)
+* [x] Panneaux redimensionnables
+
+=== V0.2 — Fondations
+
+* [ ] Intégration de crystal-asciidoctor pour la vraie conversion
+* [ ] Onglet HTML (édition bidirectionnelle AsciiDoc ↔ HTML, sens AsciiDoc→HTML)
+* [ ] Ouvrir / sauvegarder / fermer un fichier
+* [ ] Prévisualisation rétractable (bouton + raccourci)
+* [ ] Exports HTML, PDF, EPUB fonctionnels
+* [ ] Raccourcis clavier essentiels (Cmd+S, Cmd+O, Cmd+E)
+* [ ] Barre de menus
+
+=== V0.3 — Intégration
+
+* [ ] Synchronisation HTML → AsciiDoc (conversion inverse)
+* [ ] Intégration Git (détection dépôt, explorateur de fichiers, ouverture)
+* [ ] Synchronisation du scroll éditeur ↔ prévisualisation
+* [ ] Autocomplétion AsciiDoc
+* [ ] Fichiers récents
+* [ ] Barre de statut
+* [ ] Style personnalisé appliqué aux exports
+
+=== V0.4 — Confort
+
+* [ ] Snippets AsciiDoc
+* [ ] Thèmes prédéfinis pour le style du document
+* [ ] Thème clair/sombre pour l'interface
+* [ ] Mode zen (plein écran)
+* [ ] État Git du fichier
+* [ ] Historique des versions
+* [ ] Export par lot
+* [ ] Préférences persistantes
+
+=== V0.5 — Avancé
+
+* [ ] Diff visuel Git
+* [ ] Opérations Git (commit, push, pull)
+* [ ] Profils d'export
+* [ ] Support des diagrammes (crystal-asciidoctor-diagram / kroki)
+* [ ] Support des formules mathématiques (crystal-asciidoctor-mathematical)
+
+=== V1.0 — Publication
+
+* [ ] Stabilité, performance, tests
+* [ ] Packaging `.app` macOS
+* [ ] Documentation utilisateur
+* [ ] Branche `production`
+
+=== V2.0 — Extensions (futur)
+
+* [ ] Support Markdown (édition `.md` en plus de `.adoc`)
+* [ ] Support multi-onglets (plusieurs fichiers ouverts)
+* [ ] Plugins / extensions utilisateur
+* [ ] Support Linux natif (GTK4 en alternative)
+
+== Contraintes et décisions techniques
+
+=== Édition bidirectionnelle (AsciiDoc ↔ HTML)
+
+La conversion AsciiDoc → HTML repose sur `crystal-asciidoctor` qui produit un AST. La difficulté principale est la conversion *inverse* (HTML → AsciiDoc).
+
+Approche envisagée :
+
+. L'AST AsciiDoc est la *source de vérité*
+. AsciiDoc → AST → HTML est le flux naturel (crystal-asciidoctor)
+. HTML modifié → diff avec le HTML original → identification des nœuds AST impactés → mise à jour de l'AST → regénération du source AsciiDoc
+. En V0.2, seul le sens AsciiDoc → HTML est actif ; le HTML est en lecture seule éditable
+. En V0.3, la conversion inverse est implémentée
+
+=== Intégration Git
+
+Deux approches possibles :
+
+* *libgit2* via des bindings Crystal — plus rapide, pas de dépendance externe, mais bindings à écrire ou trouver
+* *CLI git* via `Process.run` — plus simple, dépend de git installé sur le système
+
+Décision reportée à la V0.3. L'approche CLI est plus pragmatique pour commencer.
+
+=== Stockage des préférences
+
+Les préférences utilisateur seront stockées dans un fichier JSON dans `~/.config/prism/` (ou `~/Library/Application Support/Prism/` sur macOS).
+
+== Glossaire
+
+AST:: Abstract Syntax Tree — représentation arborescente du document AsciiDoc après parsing
+Webview:: Composant natif du système d'exploitation permettant d'afficher du contenu HTML (WKWebView sur macOS, WebKitGTK sur Linux)
+Binding:: Pont de communication entre Crystal et JavaScript via la webview
+Shard:: Bibliothèque Crystal (équivalent d'une gem Ruby ou d'un package npm)

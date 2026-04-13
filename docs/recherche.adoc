@@ -1,0 +1,287 @@
+= Recherche : Éditeur AsciiDoc en Crystal
+:author: Philippe
+:date: 2026-04-13
+:toc:
+:toc-title: Sommaire
+
+== Objectif
+
+Construire un éditeur AsciiDoc en *pur Crystal* (pas d'application web) avec :
+
+* Édition de fichiers AsciiDoc avec coloration syntaxique
+* Édition d'une feuille de style pour personnaliser les rendus
+* Exportation automatique vers HTML, PDF et EPUB
+* Prévisualisation live du rendu
+
+=== Contraintes
+
+* *Plateforme cible principale :* macOS — l'application doit avoir un rendu agréable et cohérent avec l'environnement macOS
+* *Pas de serveur web* — pas de navigateur à ouvrir, pas de dépendance à un serveur HTTP
+* *Pipeline 100% Crystal* — tout le traitement AsciiDoc repose sur les shards aloli-crystal
+
+== Écosystème AsciiDoc en Crystal (aloli-crystal)
+
+L'organisation https://github.com/orgs/aloli-crystal/repositories[aloli-crystal] fournit déjà l'ensemble du pipeline de conversion en pur Crystal :
+
+[cols="1,2", options="header"]
+|===
+| Shard | Rôle
+
+| `crystal-asciidoctor`
+| Parsing AsciiDoc, modèle AST
+
+| `crystal-asciidoctor-pdf` / `crystal-pdf`
+| Export PDF
+
+| `crystal-asciidoctor-epub3`
+| Export EPUB3
+
+| `crystal-rouge`
+| Coloration syntaxique du code
+
+| `crystal-asciidoctor-diagram`
+| Support diagrammes
+
+| `crystal-asciidoctor-kroki`
+| Intégration Kroki (diagrammes)
+
+| `crystal-asciidoctor-mathematical`
+| Notation mathématique
+
+| `crystal-asciidoctor-revealjs`
+| Génération de présentations
+
+| `crystal-antora`
+| Générateur de site documentaire
+
+| `crystal-kramdown-asciidoc`
+| Conversion Markdown vers AsciiDoc
+|===
+
+== Toolkits GUI évalués
+
+=== Option 1 : GTK4 via gtk4.cr + gi-crystal
+
+NOTE: Bonne solution pour Linux. Sur macOS, GTK4 fonctionne (via Homebrew) mais l'application ne s'intègre pas visuellement à l'environnement — menus, scrollbars, polices et décorations de fenêtres non natifs.
+
+https://github.com/hugopl/gtk4.cr[gtk4.cr]::
+Bindings GTK4 pour Crystal, v0.18.0, actif (dernière mise à jour sept. 2025). +
+122 stars, 10 forks, licence MIT. +
+3 applications connues en production (Collision, RTFM, Tijolo).
+
+https://github.com/hugopl/gi-crystal[gi-crystal]::
+Générateur de bindings GObject Introspection, v0.25.1, actif. +
+Permet de générer des bindings pour *toute* bibliothèque GObject.
+
+Shards associés::
+`libadwaita.cr`, `pango.cr`, `vte.cr`, `harfbuzz.cr`
+
+Guide::
+https://ultimate-gtk4-crystal-guide.geopjr.dev/en/
+
+*Points forts :*
+
+* Écosystème le plus mature et actif pour du GUI Crystal
+* GtkSourceView5 disponible via gi-crystal (pattern prouvé par le projet Tijolo)
+* Libadwaita pour une UI moderne style GNOME
+
+=== Option 2 : CrymbleUI
+
+* *URL :* https://github.com/wolfgang371/crymbleui
+* *Version :* 0.3.0 (février 2025), 14 commits, 27 stars
+* *Backend :* SFML
+* *Style :* DSL déclaratif inspiré de SwiftUI, état réactif
+* *Widgets :* boutons, champs texte, checkboxes, combo boxes, scroll views, menus, VirtualMatrix
+* *Thèmes :* JSON configurables
+
+*Verdict :* Projet intéressant et ambitieux mais trop jeune.
+Pas d'éditeur de texte avancé (coloration, undo/redo) ni de rendu HTML.
+Insuffisant pour un éditeur AsciiDoc.
+
+=== Option 3 : Webview native (`naqvis/webview`) _(recommandé pour macOS)_
+
+* *URL :* https://github.com/naqvis/webview
+* *Stars :* 106, actif (dernière mise à jour avril 2026)
+* *Principe :* Embarque une vue web native dans une fenêtre système — *WKWebView* (WebKit d'Apple) sur macOS, WebKitGTK sur Linux, WebView2 sur Windows
+* *Communication :* bidirectionnelle Crystal <-> JavaScript
+* *Applications existantes :* `kojix2/memo.cr` (viewer markdown avec packaging `.app` macOS)
+
+*Points forts :*
+
+* Le moteur de rendu est *natif* macOS (WKWebView d'Apple), pas un navigateur embarqué type Electron/Chromium
+* Binaire léger
+* Éditeurs de texte matures disponibles côté UI (CodeMirror 6 pour AsciiDoc et CSS)
+* Prévisualisation HTML triviale — c'est déjà une vue web
+* Cross-plateforme (macOS, Linux, Windows)
+* Approche identique à https://tauri.app[Tauri] qui est reconnu pour produire des applications légères et d'apparence native
+
+*Points de vigilance :*
+
+* L'UI est en HTML/CSS/JS (pas du Crystal pur pour la partie visuelle)
+* Le pipeline de conversion reste en 100% Crystal côté backend
+* Pas de serveur HTTP — la communication se fait par bindings directs
+
+=== Option 4 : Cocoa/AppKit via Objective-C runtime (`crocoa`)
+
+* *URL :* https://github.com/manastech/crocoa
+* *Auteur :* Manas (créateurs de Crystal)
+* *Stars :* 20, *archivé et non maintenu*
+* *Principe :* Appels directs au runtime Objective-C depuis Crystal (`objc_msgSend`, `objc_getClass`, etc.) pour piloter NSWindow, NSButton, NSMenu, NSTextField, etc.
+
+*Points forts :*
+
+* Rendu *parfaitement natif* macOS (vrais contrôles Cocoa)
+* Prouve que Crystal peut interfacer avec AppKit
+
+*Points faibles :*
+
+* Archivé — nécessiterait un fork et une mise à jour significative
+* Pas de NSTextView avancé packagé (coloration, undo/redo)
+* macOS uniquement — pas de cross-plateforme
+* Effort de développement élevé
+
+=== Autres options (éliminées)
+
+* *crystal-gobject (jhass)* — GTK3 uniquement, abandonné depuis novembre 2021
+* *ImGui (crystal-imgui)* — Trop bas niveau, pas de rendu HTML
+* *Libui (libui.cr)* — Ensemble de widgets trop limité
+* *Qt5 (qt5.cr)* — Peu maintenu
+* *SwiftUI depuis Crystal* — Impossible, pas d'interface C exposée
+
+== Comparaison des approches pour macOS
+
+[cols="2,1,1,1,1", options="header"]
+|===
+| Critère | Webview (`naqvis/webview`) | GTK4 (`gtk4.cr`) | Crocoa (fork) | CrymbleUI
+
+| Rendu macOS natif
+| Très bon (WebKit natif)
+| Médiocre (look Linux)
+| Parfait (vrai Cocoa)
+| Neutre (custom SFML)
+
+| Éditeur de texte avancé
+| CodeMirror 6 (très mature)
+| GtkSourceView5 (mature)
+| À construire
+| Basique
+
+| Prévisualisation HTML
+| Trivial
+| WebKit2GTK (à vérifier)
+| WKWebView (à intégrer)
+| Impossible
+
+| Effort de développement
+| Modéré
+| Modéré
+| Élevé
+| Élevé
+
+| Cross-plateforme
+| macOS, Linux, Windows
+| Linux natif, macOS via Homebrew
+| macOS uniquement
+| macOS, Linux
+
+| Pérennité
+| Bonne (106 stars, actif)
+| Bonne (122 stars, actif)
+| Risquée (archivé)
+| Risquée (jeune)
+|===
+
+== Composants clés et faisabilité
+
+=== Avec Webview (approche recommandée pour macOS)
+
+[cols="1,2,1", options="header"]
+|===
+| Composant | Solution | Faisabilité
+
+| Fenêtre native
+| `naqvis/webview` (WKWebView sur macOS)
+| Prêt
+
+| Éditeur AsciiDoc (coloration, undo/redo, numéros de ligne)
+| CodeMirror 6 (JavaScript)
+| Prêt
+
+| Éditeur de feuille de style CSS
+| CodeMirror 6 (mode CSS)
+| Prêt
+
+| Parsing AsciiDoc
+| crystal-asciidoctor (aloli)
+| Prêt
+
+| Export HTML
+| crystal-asciidoctor (aloli)
+| Prêt
+
+| Export PDF
+| crystal-asciidoctor-pdf (aloli)
+| Prêt
+
+| Export EPUB3
+| crystal-asciidoctor-epub3 (aloli)
+| Prêt
+
+| Prévisualisation HTML live
+| Rendu direct dans la webview
+| Trivial
+
+| Communication UI <-> backend
+| Bindings Crystal <-> JS (webview)
+| Prêt
+|===
+
+=== Avec GTK4 (approche alternative pour Linux)
+
+[cols="1,2,1", options="header"]
+|===
+| Composant | Solution | Faisabilité
+
+| Fenêtre / layout / menus
+| gtk4.cr
+| Prêt
+
+| Éditeur AsciiDoc
+| GtkSourceView5 via gi-crystal
+| Faisable (pattern Tijolo)
+
+| Éditeur de feuille de style CSS
+| GtkSourceView5 (mode CSS)
+| Idem
+
+| Parsing / Export
+| Shards aloli-crystal
+| Prêt
+
+| Prévisualisation HTML live
+| WebKit2GTK via gi-crystal
+| À vérifier
+|===
+
+== Recommandation
+
+Pour macOS, l'approche *Webview* (`naqvis/webview`) est recommandée :
+
+* Le moteur de rendu est *natif* (WKWebView d'Apple) — pas un navigateur embarqué
+* Pas de serveur HTTP à lancer — communication directe Crystal <-> JavaScript
+* Le pipeline AsciiDoc reste en *100% Crystal* (shards aloli-crystal)
+* La partie UI bénéficie d'éditeurs de texte très matures (CodeMirror 6)
+* La prévisualisation HTML est triviale (c'est déjà une vue web)
+* L'application est cross-plateforme nativement
+
+L'approche GTK4 reste pertinente si une version Linux native est envisagée par la suite.
+
+== Prochaines étapes
+
+* [ ] Prototyper une fenêtre `naqvis/webview` avec CodeMirror 6 intégré
+* [ ] Tester la communication bidirectionnelle Crystal <-> JS (envoi du contenu AsciiDoc, réception du HTML)
+* [ ] Intégrer le pipeline crystal-asciidoctor côté Crystal
+* [ ] Implémenter la prévisualisation live (conversion AsciiDoc -> HTML -> affichage dans la webview)
+* [ ] Ajouter l'éditeur de style CSS (second panneau CodeMirror)
+* [ ] Tester les exports PDF et EPUB via les shards aloli-crystal
+* [ ] Packager en `.app` macOS (cf. `kojix2/memo.cr` comme référence)
