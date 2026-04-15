@@ -228,7 +228,12 @@ async function updateVisualEditor() {
   const style = styleEditor.state.doc.toString()
   const result = await window.convertAsciidoc(content)
   const ve = document.getElementById("visual-editor")
-  ve.innerHTML = result
+  // Retirer le TOC auto-généré (pas éditable)
+  const tmp = document.createElement("div")
+  tmp.innerHTML = result
+  const toc = tmp.querySelector("#toc")
+  if (toc) toc.remove()
+  ve.innerHTML = tmp.innerHTML
   let styleEl = ve.parentElement.querySelector(".visual-user-style")
   if (!styleEl) { styleEl = document.createElement("style"); styleEl.className = "visual-user-style"; ve.parentElement.prepend(styleEl) }
   styleEl.textContent = style.replace(/body\b/g, "#visual-editor")
