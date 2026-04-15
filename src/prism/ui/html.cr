@@ -12,85 +12,7 @@ module Prism
           <style>#{css}</style>
         </head>
         <body>
-          <div class="menubar" id="menubar">
-            <div class="menu-item">
-              <span class="menu-label">
-                <svg viewBox="0 0 24 24" width="12" height="12" style="vertical-align:-1px">
-                  <polygon points="8,4 12,2 16,4 18,10 16,18 12,20 8,18 6,10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" opacity="0.6"/>
-                </svg>
-                Prism
-              </span>
-              <div class="menu-dropdown">
-                <div class="menu-entry" onclick="window.prism.about()">À propos de Prism</div>
-                <div class="menu-divider"></div>
-                <div class="menu-entry" id="btn-dark-mode">Thème clair/sombre<span class="menu-shortcut">⌘D</span></div>
-                <div class="menu-entry" id="btn-zen">Mode zen<span class="menu-shortcut">⌘↵</span></div>
-              </div>
-            </div>
-            <div class="menu-item">
-              <span class="menu-label">Fichier</span>
-              <div class="menu-dropdown">
-                <div class="menu-entry" id="btn-new">Nouveau<span class="menu-shortcut">⌘N</span></div>
-                <div class="menu-entry" id="btn-open">Ouvrir…<span class="menu-shortcut">⌘O</span></div>
-                <div class="menu-entry" onclick="window.prism.openRecent()">Ouvrir récent…</div>
-                <div class="menu-divider"></div>
-                <div class="menu-entry" id="btn-save">Enregistrer<span class="menu-shortcut">⌘S</span></div>
-                <div class="menu-entry" onclick="window.prism.saveAs()">Enregistrer sous…<span class="menu-shortcut">⇧⌘S</span></div>
-              </div>
-            </div>
-            <div class="menu-item">
-              <span class="menu-label">Édition</span>
-              <div class="menu-dropdown">
-                <div class="menu-entry" onclick="document.execCommand('undo')">Annuler<span class="menu-shortcut">⌘Z</span></div>
-                <div class="menu-entry" onclick="document.execCommand('redo')">Rétablir<span class="menu-shortcut">⇧⌘Z</span></div>
-                <div class="menu-divider"></div>
-                <div class="menu-entry" onclick="document.execCommand('cut')">Couper<span class="menu-shortcut">⌘X</span></div>
-                <div class="menu-entry" onclick="document.execCommand('copy')">Copier<span class="menu-shortcut">⌘C</span></div>
-                <div class="menu-entry" onclick="document.execCommand('paste')">Coller<span class="menu-shortcut">⌘V</span></div>
-                <div class="menu-divider"></div>
-                <div class="menu-entry" onclick="window.prism.find()">Rechercher…<span class="menu-shortcut">⌘F</span></div>
-              </div>
-            </div>
-            <div class="menu-item">
-              <span class="menu-label">Insertion</span>
-              <div class="menu-dropdown">
-                <div class="menu-entry" data-format="bold">Gras<span class="menu-shortcut">⇧⌘B</span></div>
-                <div class="menu-entry" data-format="italic">Italique<span class="menu-shortcut">⌘I</span></div>
-                <div class="menu-entry" data-format="mono">Monospace</div>
-                <div class="menu-divider"></div>
-                <div class="menu-entry" data-format="h1">Titre 1</div>
-                <div class="menu-entry" data-format="h2">Titre 2</div>
-                <div class="menu-entry" data-format="h3">Titre 3</div>
-                <div class="menu-divider"></div>
-                <div class="menu-entry" data-format="ul">Liste à puces</div>
-                <div class="menu-entry" data-format="ol">Liste numérotée</div>
-                <div class="menu-entry" data-format="link">Lien</div>
-                <div class="menu-entry" data-format="image">Image</div>
-                <div class="menu-entry" data-format="code">Bloc de code</div>
-                <div class="menu-entry" data-format="quote">Citation</div>
-                <div class="menu-entry" data-format="table">Tableau</div>
-                <div class="menu-entry" data-format="admonition">Note / Admonition</div>
-              </div>
-            </div>
-            <div class="menu-item">
-              <span class="menu-label">Affichage</span>
-              <div class="menu-dropdown">
-                <div class="menu-entry" id="btn-toggle-sidebar">Sidebar<span class="menu-shortcut">⌘B</span></div>
-                <div class="menu-entry" id="btn-toggle-preview">Prévisualisation<span class="menu-shortcut">⌘P</span></div>
-                <div class="menu-entry" id="btn-minimap">Minimap<span class="menu-shortcut">⌘M</span></div>
-              </div>
-            </div>
-            <div class="menu-item">
-              <span class="menu-label">Export</span>
-              <div class="menu-dropdown">
-                <div class="menu-entry" id="btn-export-html">HTML<span class="menu-shortcut">⌘E</span></div>
-                <div class="menu-entry" id="btn-export-pdf">PDF</div>
-                <div class="menu-entry" id="btn-export-epub">EPUB</div>
-                <div class="menu-divider"></div>
-                <div class="menu-entry" id="btn-export-all">Tout exporter<span class="menu-shortcut">⇧⌘E</span></div>
-              </div>
-            </div>
-          </div>
+          <!-- Le menu est natif macOS via crystal-appkit -->
 
           <div id="breadcrumb"><span class="bc-item">Document</span></div>
 
@@ -198,48 +120,9 @@ module Prism
         }
 
         /* Zen */
-        body.zen .menubar, body.zen .status-bar, body.zen .sidebar,
+        body.zen .status-bar, body.zen .sidebar,
         body.zen .preview-panel, body.zen #divider, body.zen .panel-header,
         body.zen .format-bar, body.zen #breadcrumb, body.zen .minimap { display: none !important; }
-
-        /* Menu bar (macOS style) */
-        .menubar {
-          display: flex; align-items: stretch;
-          background: var(--toolbar-bg);
-          border-bottom: 1px solid var(--border2);
-          font-size: 13px; min-height: 28px;
-          -webkit-app-region: drag;
-          padding-left: 78px; /* espace pour les feux tricolores macOS */
-        }
-        .menu-item {
-          position: relative;
-          -webkit-app-region: no-drag;
-        }
-        .menu-label {
-          display: flex; align-items: center; gap: 4px;
-          padding: 4px 10px; cursor: default; color: var(--text);
-          font-size: 13px; font-weight: 500; user-select: none;
-          border-radius: 4px; margin: 2px 1px;
-        }
-        .menu-label:hover { background: var(--accent); color: white; }
-        .menu-dropdown {
-          display: none; position: absolute; top: 100%; left: 0;
-          background: var(--bg2); border: 1px solid var(--border2);
-          border-radius: 6px; min-width: 220px;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-          padding: 4px 0; z-index: 1000;
-        }
-        .menu-item:hover .menu-dropdown,
-        .menu-item.open .menu-dropdown { display: block; }
-        .menu-entry {
-          padding: 4px 14px; cursor: default; font-size: 13px;
-          display: flex; justify-content: space-between; align-items: center;
-          color: var(--text); border-radius: 4px; margin: 0 4px;
-        }
-        .menu-entry:hover { background: var(--accent); color: white; }
-        .menu-shortcut { font-size: 12px; color: var(--text2); margin-left: 20px; }
-        .menu-entry:hover .menu-shortcut { color: rgba(255,255,255,0.7); }
-        .menu-divider { height: 1px; background: var(--border); margin: 4px 8px; }
 
         /* Toolbar sep (used in format bar) */
         .toolbar-sep { width: 1px; height: 14px; background: var(--border2); margin: 0 3px; }

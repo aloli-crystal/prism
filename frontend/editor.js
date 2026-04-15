@@ -589,34 +589,6 @@ function doFind() {
   openSearchPanel(asciidocEditor)
 }
 
-// --- Menu bar behavior ---
-function setupMenuBar() {
-  // Fermer les menus au clic en dehors
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".menu-item")) {
-      document.querySelectorAll(".menu-item.open").forEach((m) => m.classList.remove("open"))
-    }
-  })
-
-  // Ouvrir/fermer au clic sur le label
-  document.querySelectorAll(".menu-label").forEach((label) => {
-    label.addEventListener("click", (e) => {
-      const item = label.closest(".menu-item")
-      const wasOpen = item.classList.contains("open")
-      document.querySelectorAll(".menu-item.open").forEach((m) => m.classList.remove("open"))
-      if (!wasOpen) item.classList.add("open")
-      e.stopPropagation()
-    })
-  })
-
-  // Fermer le menu après un clic sur une entrée
-  document.querySelectorAll(".menu-entry").forEach((entry) => {
-    entry.addEventListener("click", () => {
-      document.querySelectorAll(".menu-item.open").forEach((m) => m.classList.remove("open"))
-    })
-  })
-}
-
 // --- CLI load ---
 function loadFromCli(jsonStr) {
   try { handleOpenResult(jsonStr) } catch (e) {}
@@ -664,23 +636,13 @@ window.addEventListener("DOMContentLoaded", async () => {
   })
 
   // Toolbar buttons
-  document.getElementById("btn-new").addEventListener("click", doNew)
-  document.getElementById("btn-open").addEventListener("click", doOpen)
-  document.getElementById("btn-save").addEventListener("click", doSave)
-  document.getElementById("btn-export-html").addEventListener("click", () => doExport(window.exportHtml, "HTML"))
-  document.getElementById("btn-export-pdf").addEventListener("click", () => doExport(window.exportPdf, "PDF"))
-  document.getElementById("btn-export-epub").addEventListener("click", () => doExport(window.exportEpub, "EPUB"))
-  document.getElementById("btn-export-all").addEventListener("click", () => doExport(window.exportAll, "Tous"))
-  document.getElementById("btn-toggle-preview").addEventListener("click", togglePreview)
-  document.getElementById("btn-toggle-sidebar").addEventListener("click", toggleSidebar)
-  document.getElementById("btn-dark-mode").addEventListener("click", toggleDarkMode)
-  document.getElementById("btn-zen").addEventListener("click", toggleZenMode)
-  document.getElementById("btn-minimap").addEventListener("click", toggleMinimap)
+  // Les actions sont déclenchées par le menu natif macOS via les raccourcis clavier
+  // et par la barre de formatage via data-format
 
   if (!previewVisible) togglePreview()
   if (sidebarVisible) { document.querySelector(".sidebar").classList.remove("hidden"); loadSidebar() }
 
-  setupMenuBar(); setupDivider(); setupShortcuts(); updateStatusBar(); updatePreview()
+  setupDivider(); setupShortcuts(); updateStatusBar(); updatePreview()
   setTimeout(() => { setupScrollSync(); setupMinimap() }, 500)
 
   // Breadcrumb update on cursor move

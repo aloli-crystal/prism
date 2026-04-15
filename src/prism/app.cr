@@ -10,7 +10,6 @@ module Prism
     @recent_files : RecentFiles
     @preferences : Preferences
     @git_repo : Git::Repository? = nil
-
     @initial_file : String? = nil
 
     def initialize(file_arg : String? = nil)
@@ -24,7 +23,6 @@ module Prism
 
     def start
       @webview.html = UI::Html.page
-      # Si un fichier a été passé en argument, l'ouvrir après le chargement
       if file = @initial_file
         json = open_file_at(file)
         @webview.eval("setTimeout(() => { if (window.prism && window.prism.loadFromCli) window.prism.loadFromCli(#{json.to_json}); }, 300);")
@@ -38,9 +36,7 @@ module Prism
       return nil unless arg
       path = File.expand_path(arg)
       if File.directory?(path)
-        # Si c'est un dossier, chercher le premier .adoc
-        adoc = Dir.glob(File.join(path, "*.adoc")).first?
-        adoc || Dir.glob(File.join(path, "**/*.adoc")).first?
+        Dir.glob(File.join(path, "*.adoc")).first? || Dir.glob(File.join(path, "**/*.adoc")).first?
       elsif File.exists?(path)
         path
       else
@@ -137,18 +133,12 @@ module Prism
       "<pre style='color:red'>Erreur de conversion : #{ex.message}</pre>"
     end
 
-    # --- Gestion des fichiers ---
+    # --- Gestion des fichiers (dialogues natifs AppKit) ---
 
     private def open_file : String
-      result = run_dialog("osascript", "-e",
-        %(choose file of type {"adoc", "asciidoc", "asc", "txt"} with prompt "Ouvrir un fichier AsciiDoc"))
-      return "" if result.empty?
-
-      path = result.gsub("alias ", "").strip
-      posix = run_dialog("osascript", "-e", %(POSIX path of "#{path}")).strip
-      return "" if posix.empty?
-
-      open_file_at(posix)
+      path = AppKit::Dialog.open_file("Ouvrir un fichier AsciiDoc", types: "adoc,asciidoc,asc,txt")
+      return "" unless path
+      open_file_at(path)
     rescue ex
       {error: ex.message}.to_json
     end
@@ -160,10 +150,8 @@ module Prism
       @recent_files.add(path)
       @preferences.last_directory = File.dirname(path)
 
-      # Détecter le dépôt Git
       @git_repo = Git::Repository.new(path)
 
-      # Charger le CSS associé s'il existe
       css_path = path.sub(/\.\w+$/, ".css")
       css_content = File.exists?(css_path) ? File.read(css_path) : ""
 
@@ -196,16 +184,10 @@ module Prism
 
     private def save_file_as(content : String, stylesheet : String) : String
       default_name = @current_file ? File.basename(@current_file.not_nil!) : "document.adoc"
-      result = run_dialog("osascript", "-e",
-        %(choose file name with prompt "Sauvegarder sous" default name "#{default_name}"))
-      return "" if result.empty?
-
-      path = result.gsub("file ", "").strip
-      posix = run_dialog("osascript", "-e", %(POSIX path of "#{path}")).strip
-      return "" if posix.empty?
-      posix += ".adoc" unless posix.includes?(".")
-
-      save_file(content, stylesheet, posix)
+      path = AppKit::Dialog.save_file("Enregistrer sous", default_name: default_name)
+      return "" unless path
+      path += ".adoc" unless path.includes?(".")
+      save_file(content, stylesheet, path)
     rescue ex
       {error: ex.message}.to_json
     end
@@ -229,7 +211,7 @@ module Prism
       {error: ex.message}.to_json
     end
 
-    # --- Exports ---
+    # --- Exports (dialogues natifs AppKit) ---
 
     private def export_html(content : String, stylesheet : String) : String
       html = Asciidoctor.convert(content, {
@@ -241,8 +223,8 @@ module Prism
         html = html.sub("</head>", "<style>#{stylesheet}</style></head>")
       end
 
-      path = choose_save_path(base_name("html"), "HTML")
-      return "" if path.empty?
+      path = AppKit::Dialog.save_file("Exporter en HTML", default_name: base_name("html"))
+      return "" unless path
       path += ".html" unless path.ends_with?(".html")
 
       File.write(path, html)
@@ -252,8 +234,8 @@ module Prism
     end
 
     private def export_pdf(content : String, stylesheet : String) : String
-      path = choose_save_path(base_name("pdf"), "PDF")
-      return "" if path.empty?
+      path = AppKit::Dialog.save_file("Exporter en PDF", default_name: base_name("pdf"))
+      return "" unless path
       path += ".pdf" unless path.ends_with?(".pdf")
 
       doc = Asciidoctor.load(content, {"safe" => "safe", "backend" => "pdf", "outfile" => path})
@@ -264,8 +246,8 @@ module Prism
     end
 
     private def export_epub(content : String, stylesheet : String) : String
-      path = choose_save_path(base_name("epub"), "EPUB")
-      return "" if path.empty?
+      path = AppKit::Dialog.save_file("Exporter en EPUB", default_name: base_name("epub"))
+      return "" unless path
       path += ".epub" unless path.ends_with?(".epub")
 
       doc = Asciidoctor.load(content, {"safe" => "safe"})
@@ -278,7 +260,6 @@ module Prism
     private def export_all(content : String, stylesheet : String) : String
       results = [] of String
 
-      # Export HTML
       html_path = base_export_path("html")
       if html_path
         html = Asciidoctor.convert(content, {"safe" => "safe", "backend" => "html5", "standalone" => "true"})
@@ -289,7 +270,6 @@ module Prism
         results << "HTML: #{html_path}"
       end
 
-      # Export PDF
       pdf_path = base_export_path("pdf")
       if pdf_path
         doc = Asciidoctor.load(content, {"safe" => "safe", "backend" => "pdf", "outfile" => pdf_path})
@@ -297,7 +277,6 @@ module Prism
         results << "PDF: #{pdf_path}"
       end
 
-      # Export EPUB
       epub_path = base_export_path("epub")
       if epub_path
         doc = Asciidoctor.load(content, {"safe" => "safe"})
@@ -342,22 +321,6 @@ module Prism
       else
         nil
       end
-    end
-
-    private def choose_save_path(default_name : String, format : String) : String
-      result = run_dialog("osascript", "-e",
-        %(choose file name with prompt "Exporter en #{format}" default name "#{default_name}"))
-      return "" if result.empty?
-
-      path = result.gsub("file ", "").strip
-      posix = run_dialog("osascript", "-e", %(POSIX path of "#{path}")).strip
-      posix
-    end
-
-    private def run_dialog(cmd : String, *args : String) : String
-      output = IO::Memory.new
-      status = Process.run(cmd, args.to_a, output: output, error: Process::Redirect::Close)
-      status.success? ? output.to_s : ""
     end
   end
 end
