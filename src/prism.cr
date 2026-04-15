@@ -13,6 +13,7 @@ module Prism
 
     # Initialiser AppKit et créer le menu natif macOS AVANT la webview
     AppKit.init
+    AppKit.set_app_name("Prism")
     setup_native_menu
 
     app = App.new(file_arg)
