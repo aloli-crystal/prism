@@ -123,13 +123,15 @@ module Prism
               <div class="panel editor-panel">
                 <div class="panel-header">
                   <span class="tab active" data-tab="asciidoc" data-group="editor">AsciiDoc</span>
-                  <span class="tab" data-tab="html" data-group="editor">HTML</span>
+                  <span class="tab" data-tab="visual" data-group="editor">Visuel</span>
                   <span class="tab" data-tab="style" data-group="editor">Style</span>
                 </div>
                 <div class="editor-with-minimap">
                   <div class="editor-area">
                     <div id="editor-asciidoc" class="editor-container"></div>
-                    <div id="editor-html" class="editor-container hidden"></div>
+                    <div id="editor-visual" class="editor-container hidden">
+                      <div id="visual-editor" class="visual-editor" contenteditable="true"></div>
+                    </div>
                     <div id="editor-style" class="editor-container hidden"></div>
                   </div>
                   <div id="minimap" class="minimap">
@@ -307,7 +309,30 @@ module Prism
         /* Editor + Minimap */
         .editor-with-minimap { flex: 1; display: flex; overflow: hidden; }
         .editor-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .editor-container { flex: 1; overflow: hidden; }
+        .editor-container { flex: 1; overflow: hidden; position: relative; }
+
+        /* Visual (WYSIWYG) editor */
+        .visual-editor {
+          height: 100%; overflow-y: auto; padding: 1.5em;
+          font-family: -apple-system, BlinkMacSystemFont, Georgia, serif;
+          font-size: 14px; line-height: 1.7; color: var(--text);
+          background: var(--bg2); outline: none;
+          max-width: 52em; margin: 0 auto;
+        }
+        .visual-editor:focus { outline: none; }
+        .visual-editor h1 { font-size: 1.8em; border-bottom: 2px solid var(--accent); padding-bottom: .3em; margin-bottom: .6em; }
+        .visual-editor h2 { font-size: 1.3em; margin-top: 1.5em; margin-bottom: .5em; color: var(--text); }
+        .visual-editor h3 { font-size: 1.1em; margin-top: 1.2em; margin-bottom: .4em; }
+        .visual-editor ul, .visual-editor ol { padding-left: 1.5em; }
+        .visual-editor li { margin-bottom: .3em; }
+        .visual-editor a { color: var(--accent); }
+        .visual-editor code { background: var(--bg3); padding: .15em .4em; border-radius: 3px; font-size: .9em; }
+        .visual-editor pre { background: var(--bg3); padding: 1em; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); }
+        .visual-editor blockquote { border-left: 3px solid var(--accent); padding-left: 1em; color: var(--text2); margin: 1em 0; }
+        .visual-editor table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+        .visual-editor th, .visual-editor td { border: 1px solid var(--border); padding: .5em .8em; }
+        .visual-editor th { background: var(--bg3); font-weight: 600; }
+        .visual-editor img { max-width: 100%; }
         .editor-container .cm-editor { height: 100%; }
 
         /* Minimap */

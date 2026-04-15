@@ -3,7 +3,6 @@ import { EditorState, Compartment } from "@codemirror/state"
 import { StreamLanguage } from "@codemirror/language"
 import { asciidoc } from "codemirror-asciidoc"
 import { css } from "@codemirror/lang-css"
-import { html } from "@codemirror/lang-html"
 import { search, openSearchPanel, closeSearchPanel } from "@codemirror/search"
 
 // --- Theme ---
@@ -94,7 +93,8 @@ th { background: #f5f5f7; font-weight: 600; }
 `
 
 // --- State ---
-let asciidocEditor, htmlEditor, styleEditor
+let asciidocEditor, styleEditor
+let activeTab = "asciidoc"
 let debounceTimer
 let currentFilePath = ""
 let isModified = false
@@ -148,6 +148,15 @@ function insertAtLineStart(editor, prefix) {
 }
 
 function applyFormat(format) {
+  if (activeTab === "visual") {
+    applyVisualFormat(format)
+  } else {
+    applyAsciidocFormat(format)
+  }
+  schedulePreview()
+}
+
+function applyAsciidocFormat(format) {
   const editor = asciidocEditor
   switch (format) {
     case "bold": insertAround(editor, "*", "*"); break
@@ -158,33 +167,46 @@ function applyFormat(format) {
     case "h3": insertAtLineStart(editor, "=== "); break
     case "ul": insertAtLineStart(editor, "* "); break
     case "ol": insertAtLineStart(editor, ". "); break
-    case "link":
-      insertAround(editor, "https://", "[lien]")
-      break
-    case "image":
-      insertAround(editor, "image::", "[alt]")
-      break
-    case "code":
+    case "link": insertAround(editor, "https://", "[lien]"); break
+    case "image": insertAround(editor, "image::", "[alt]"); break
+    case "code": {
       const sel = editor.state.selection.main
       const text = editor.state.sliceDoc(sel.from, sel.to)
-      if (text.includes("\n")) {
-        insertAround(editor, "[source]\n----\n", "\n----")
-      } else {
-        insertAround(editor, "`", "`")
-      }
+      if (text.includes("\n")) insertAround(editor, "[source]\n----\n", "\n----")
+      else insertAround(editor, "`", "`")
       break
-    case "quote":
-      insertAround(editor, "[quote]\n____\n", "\n____")
-      break
-    case "table":
+    }
+    case "quote": insertAround(editor, "[quote]\n____\n", "\n____"); break
+    case "table": {
       const tpl = `[cols="1,1", options="header"]\n|===\n| Col 1 | Col 2\n\n| A | B\n|===`
       insertAround(editor, tpl, "")
       break
-    case "admonition":
-      insertAtLineStart(editor, "NOTE: ")
-      break
+    }
+    case "admonition": insertAtLineStart(editor, "NOTE: "); break
   }
-  schedulePreview()
+}
+
+function applyVisualFormat(format) {
+  // execCommand pour l'éditeur contenteditable
+  const ve = document.getElementById("visual-editor")
+  ve.focus()
+  switch (format) {
+    case "bold": document.execCommand("bold"); break
+    case "italic": document.execCommand("italic"); break
+    case "mono": document.execCommand("insertHTML", false, "<code>" + (window.getSelection().toString() || "code") + "</code>"); break
+    case "h1": document.execCommand("formatBlock", false, "h1"); break
+    case "h2": document.execCommand("formatBlock", false, "h2"); break
+    case "h3": document.execCommand("formatBlock", false, "h3"); break
+    case "ul": document.execCommand("insertUnorderedList"); break
+    case "ol": document.execCommand("insertOrderedList"); break
+    case "link": {
+      const url = prompt("URL :")
+      if (url) document.execCommand("createLink", false, url)
+      break
+    }
+    case "quote": document.execCommand("formatBlock", false, "blockquote"); break
+    case "admonition": document.execCommand("insertHTML", false, "<div class='admonition'><strong>NOTE:</strong> </div>"); break
+  }
 }
 
 // --- Minimap ---
@@ -290,10 +312,10 @@ async function updatePreview() {
   const style = styleEditor.state.doc.toString()
   const result = await window.convertAsciidoc(content)
 
-  // Sync HTML editor
-  const htmlTab = document.querySelector('[data-tab="html"]')
-  if (htmlTab && !htmlTab.classList.contains("editing")) {
-    replaceEditorContent(htmlEditor, result)
+  // Sync visual editor (si on n'est pas en train d'éditer dedans)
+  const ve = document.getElementById("visual-editor")
+  if (ve && activeTab !== "visual") {
+    ve.innerHTML = result
   }
 
   renderPreview(result, style)
@@ -367,11 +389,10 @@ function toggleMinimap() {
 
 function recreateEditors() {
   const adocContent = asciidocEditor.state.doc.toString()
-  const htmlContent = htmlEditor.state.doc.toString()
+
   const cssContent = styleEditor.state.doc.toString()
-  asciidocEditor.destroy(); htmlEditor.destroy(); styleEditor.destroy()
+  asciidocEditor.destroy(); styleEditor.destroy()
   asciidocEditor = createEditor(document.getElementById("editor-asciidoc"), StreamLanguage.define(asciidoc), adocContent, schedulePreview)
-  htmlEditor = createEditor(document.getElementById("editor-html"), html(), htmlContent, null)
   styleEditor = createEditor(document.getElementById("editor-style"), css(), cssContent, schedulePreview)
   setupMinimap()
 }
@@ -537,6 +558,23 @@ function setupShortcuts() {
   })
 }
 
+// --- Visual editor ---
+async function updateVisualEditor() {
+  const content = asciidocEditor.state.doc.toString()
+  const style = styleEditor.state.doc.toString()
+  const result = await window.convertAsciidoc(content)
+  const ve = document.getElementById("visual-editor")
+  ve.innerHTML = result
+  // Appliquer le style utilisateur
+  let styleEl = ve.parentElement.querySelector(".visual-user-style")
+  if (!styleEl) {
+    styleEl = document.createElement("style")
+    styleEl.className = "visual-user-style"
+    ve.parentElement.prepend(styleEl)
+  }
+  styleEl.textContent = style.replace(/body\b/g, ".visual-editor")
+}
+
 // --- Menu helpers ---
 function showAbout() {
   alert("Prism v1.0.0\nEditeur AsciiDoc en Crystal\nhttps://github.com/aloli-crystal/prism")
@@ -595,8 +633,11 @@ window.addEventListener("DOMContentLoaded", async () => {
   } catch (e) {}
 
   asciidocEditor = createEditor(document.getElementById("editor-asciidoc"), StreamLanguage.define(asciidoc), defaultAsciidoc, schedulePreview)
-  htmlEditor = createEditor(document.getElementById("editor-html"), html(), "", null)
   styleEditor = createEditor(document.getElementById("editor-style"), css(), defaultCss, schedulePreview)
+
+  // Visual editor: sync changes back on blur
+  const ve = document.getElementById("visual-editor")
+  ve.addEventListener("input", () => { markModified() })
 
   // Tabs
   document.querySelectorAll(".tab[data-group]").forEach((tab) => {
@@ -606,11 +647,12 @@ window.addEventListener("DOMContentLoaded", async () => {
       tab.classList.add("active")
       const target = tab.dataset.tab
       if (group === "editor") {
+        activeTab = target
         document.getElementById("editor-asciidoc").classList.toggle("hidden", target !== "asciidoc")
-        document.getElementById("editor-html").classList.toggle("hidden", target !== "html")
+        document.getElementById("editor-visual").classList.toggle("hidden", target !== "visual")
         document.getElementById("editor-style").classList.toggle("hidden", target !== "style")
         if (target === "asciidoc") asciidocEditor.requestMeasure()
-        else if (target === "html") htmlEditor.requestMeasure()
+        else if (target === "visual") updateVisualEditor()
         else styleEditor.requestMeasure()
       }
     })
