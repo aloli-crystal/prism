@@ -172,6 +172,8 @@ function htmlToAsciidoc(el) {
     if (node.nodeType === 3) { out += node.textContent; continue }
     if (node.nodeType !== 1) continue
     const tag = node.tagName.toLowerCase()
+    // Ignorer les éléments injectés (style, script)
+    if (tag === "style" || tag === "script" || tag === "link") continue
     const inner = node.innerHTML ? htmlToAsciidocInline(node) : ""
     const text = node.textContent || ""
     switch (tag) {
@@ -242,7 +244,10 @@ async function updateVisualEditor() {
 function syncVisualToAsciidoc() {
   const ve = document.getElementById("visual-editor")
   if (!ve) return
-  const adoc = htmlToAsciidoc(ve).trim()
+  // Cloner et retirer les éléments injectés (style, script)
+  const clone = ve.cloneNode(true)
+  clone.querySelectorAll("style, script, .visual-user-style").forEach((el) => el.remove())
+  const adoc = htmlToAsciidoc(clone).trim()
   replaceContent(asciidocEditor, adoc)
   schedulePreview()
 }
@@ -514,6 +519,18 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   asciidocEditor = createEditor(document.getElementById("editor-asciidoc"), StreamLanguage.define(asciidoc), defaultAsciidoc, schedulePreview)
   styleEditor = createEditor(document.getElementById("editor-style"), css(), defaultCss, schedulePreview)
+
+  // Visual editor: update preview on input
+  const ve = document.getElementById("visual-editor")
+  let visualDebounce
+  ve.addEventListener("input", () => {
+    markModified()
+    clearTimeout(visualDebounce)
+    visualDebounce = setTimeout(() => {
+      const style = styleEditor.state.doc.toString()
+      renderPreview(ve.innerHTML, style)
+    }, 300)
+  })
 
   // Tabs
   document.querySelectorAll(".tab[data-group]").forEach((tab) => {
