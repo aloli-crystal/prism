@@ -7,44 +7,40 @@ module Prism
         <<-HTML
         <!DOCTYPE html>
         <html lang="fr">
-        <head>
-          <meta charset="UTF-8">
-          <style>#{css}</style>
-        </head>
+        <head><meta charset="UTF-8"><style>#{css}</style></head>
         <body>
           <!-- Le menu est natif macOS via crystal-appkit -->
 
           <div id="breadcrumb"><span class="bc-item">Document</span></div>
 
           <div class="format-bar">
-            <button data-format="bold" title="Gras (Cmd+Shift+B)"><b>G</b></button>
-            <button data-format="italic" title="Italique (Cmd+I)"><i>I</i></button>
-            <button data-format="mono" title="Monospace">M</button>
-            <span class="toolbar-sep"></span>
-            <button data-format="h1" title="Titre 1">H1</button>
-            <button data-format="h2" title="Titre 2">H2</button>
-            <button data-format="h3" title="Titre 3">H3</button>
-            <span class="toolbar-sep"></span>
-            <button data-format="ul" title="Liste">•</button>
-            <button data-format="ol" title="Liste numérotée">1.</button>
-            <button data-format="link" title="Lien">🔗</button>
-            <button data-format="image" title="Image">🖼</button>
-            <button data-format="code" title="Code">{ }</button>
-            <button data-format="quote" title="Citation">❝</button>
-            <button data-format="table" title="Tableau">⊞</button>
-            <button data-format="admonition" title="Note">ℹ</button>
+            <button data-format="bold" title="Gras ⇧⌘B"><b>G</b></button>
+            <button data-format="italic" title="Italique ⌘I"><i>I</i></button>
+            <button data-format="mono" title="Mono">M</button>
+            <span class="sep"></span>
+            <button data-format="h1">H1</button>
+            <button data-format="h2">H2</button>
+            <button data-format="h3">H3</button>
+            <span class="sep"></span>
+            <button data-format="ul">•</button>
+            <button data-format="ol">1.</button>
+            <button data-format="link">Lien</button>
+            <button data-format="code">Code</button>
+            <button data-format="quote">Citation</button>
+            <button data-format="table">Tableau</button>
+            <button data-format="admonition">Note</button>
           </div>
 
           <div class="main-area">
             <div class="sidebar hidden">
-              <div class="sidebar-header">Explorateur</div>
+              <div class="sb-header">Explorateur</div>
               <div class="sidebar-content"></div>
             </div>
 
             <div class="panels">
               <div class="panel editor-panel">
-                <div class="panel-header">
-                  <span class="tab active" data-tab="asciidoc" data-group="editor">AsciiDoc</span>
+                <div class="tabs">
+                  <span class="tab active" data-tab="asciidoc" data-group="editor">Source</span>
                   <span class="tab" data-tab="visual" data-group="editor">Visuel</span>
                   <span class="tab" data-tab="style" data-group="editor">Style</span>
                 </div>
@@ -56,7 +52,7 @@ module Prism
                     </div>
                     <div id="editor-style" class="editor-container hidden"></div>
                   </div>
-                  <div id="minimap" class="minimap">
+                  <div id="minimap" class="minimap hidden">
                     <div class="mm-lines"></div>
                     <div class="mm-viewport"></div>
                   </div>
@@ -66,7 +62,7 @@ module Prism
               <div class="divider" id="divider"></div>
 
               <div class="panel preview-panel">
-                <div class="panel-header"><span>Prévisualisation</span></div>
+                <div class="tabs"><span>Aperçu</span></div>
                 <iframe id="preview" sandbox="allow-same-origin"></iframe>
               </div>
             </div>
@@ -75,13 +71,7 @@ module Prism
           <div class="status-bar">
             <span id="status-file">Sans titre</span>
             <span id="status-git" style="display:none"></span>
-            <span class="status-right">
-              <span id="status-pos">Ln 1, Col 1</span>
-              <span class="shortcut-hint">⌘F chercher</span>
-              <span class="shortcut-hint">⌘S sauver</span>
-              <span class="shortcut-hint">⌘P aperçu</span>
-              <span class="shortcut-hint">⌘M minimap</span>
-            </span>
+            <span class="status-r"><span id="status-pos">1:1</span></span>
           </div>
 
           <script>#{EDITOR_JS}</script>
@@ -93,59 +83,51 @@ module Prism
       private def self.css : String
         <<-CSS
         :root {
-          --bg: #f7f7f8; --bg2: #ffffff; --bg3: #fafafa;
-          --border: #e5e5e7; --border2: #d2d2d7;
-          --text: #1d1d1f; --text2: #86868b; --text3: #6e6e73;
-          --accent: #0071e3;
-          --toolbar-bg: linear-gradient(180deg, #fafafa 0%, #f0f0f2 100%);
-          --btn-bg: linear-gradient(180deg, #ffffff 0%, #f5f5f7 100%);
-          --btn-hover: linear-gradient(180deg, #f5f5f7 0%, #e8e8ed 100%);
-          --sidebar-bg: #f0f0f2;
+          --bg: #fafafa; --bg2: #ffffff; --bg3: #f5f5f5;
+          --border: #ebebeb; --text: #2e2e2e; --text2: #999; --text3: #777;
+          --accent: #528bff; --sidebar-bg: #f2f2f2;
         }
         body.dark {
-          --bg: #1e1e1e; --bg2: #252526; --bg3: #2d2d2d;
-          --border: #3c3c3c; --border2: #4a4a4a;
-          --text: #d4d4d4; --text2: #808080; --text3: #999;
-          --accent: #4fc1ff;
-          --toolbar-bg: linear-gradient(180deg, #2d2d2d 0%, #252526 100%);
-          --btn-bg: linear-gradient(180deg, #3c3c3c 0%, #333 100%);
-          --btn-hover: linear-gradient(180deg, #4a4a4a 0%, #3c3c3c 100%);
-          --sidebar-bg: #252526;
+          --bg: #1e1e1e; --bg2: #1e1e1e; --bg3: #252526;
+          --border: #2d2d2d; --text: #c8c8c8; --text2: #555; --text3: #777;
+          --accent: #528bff; --sidebar-bg: #1a1a1a;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
           background: var(--bg); color: var(--text);
           height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+          font-size: 13px;
         }
 
         /* Zen */
-        body.zen .status-bar, body.zen .sidebar,
-        body.zen .preview-panel, body.zen #divider, body.zen .panel-header,
-        body.zen .format-bar, body.zen #breadcrumb, body.zen .minimap { display: none !important; }
-
-        /* Toolbar sep (used in format bar) */
-        .toolbar-sep { width: 1px; height: 14px; background: var(--border2); margin: 0 3px; }
+        body.zen .status-bar, body.zen .sidebar, body.zen .preview-panel,
+        body.zen #divider, body.zen .tabs, body.zen .format-bar,
+        body.zen #breadcrumb, body.zen .minimap { display: none !important; }
 
         /* Breadcrumb */
         #breadcrumb {
           display: flex; align-items: center; gap: 2px;
-          padding: 2px 12px; background: var(--bg3);
+          padding: 3px 16px; font-size: 12px; color: var(--text2);
+          min-height: 24px; overflow: hidden;
           border-bottom: 1px solid var(--border);
-          font-size: 11px; color: var(--text2); min-height: 22px; overflow: hidden;
         }
-        .bc-item { cursor: pointer; padding: 1px 4px; border-radius: 3px; white-space: nowrap; }
+        .bc-item { cursor: pointer; padding: 1px 4px; border-radius: 3px; }
         .bc-item:hover { background: var(--accent); color: white; }
-        .bc-sep { color: var(--border2); margin: 0 1px; }
+        .bc-sep { color: var(--border); margin: 0 2px; font-size: 10px; }
 
         /* Format bar */
         .format-bar {
-          display: flex; align-items: center; gap: 2px;
-          padding: 2px 10px; background: var(--bg3);
-          border-bottom: 1px solid var(--border);
-          min-height: 26px;
+          display: flex; align-items: center; gap: 1px;
+          padding: 3px 16px; border-bottom: 1px solid var(--border);
         }
-        .format-bar button { font-size: 11px; min-width: 24px; text-align: center; }
+        .format-bar button {
+          padding: 2px 8px; border: none; border-radius: 4px;
+          background: transparent; color: var(--text3); font-size: 12px;
+          font-family: inherit; cursor: pointer; transition: all .1s;
+        }
+        .format-bar button:hover { background: var(--accent); color: white; }
+        .sep { width: 1px; height: 12px; background: var(--border); margin: 0 6px; }
 
         /* Main */
         .main-area { display: flex; flex: 1; overflow: hidden; }
@@ -154,108 +136,104 @@ module Prism
         .sidebar {
           width: 200px; background: var(--sidebar-bg);
           border-right: 1px solid var(--border);
-          display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0;
+          display: flex; flex-direction: column; flex-shrink: 0;
         }
-        .sidebar-header {
-          padding: 6px 10px; font-size: 10px; font-weight: 600;
-          color: var(--text2); text-transform: uppercase; letter-spacing: .5px;
-          border-bottom: 1px solid var(--border);
+        .sb-header { padding: 10px 14px; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; }
+        .sidebar-content { flex: 1; overflow-y: auto; }
+        .sb-section { margin-bottom: 4px; }
+        .sb-title { padding: 8px 14px 2px; font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; }
+        .sb-item {
+          padding: 4px 14px 4px 20px; font-size: 12px; cursor: pointer; color: var(--text);
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        .sidebar-content { flex: 1; overflow-y: auto; padding: 2px 0; }
-        .sidebar-section { margin-bottom: 6px; }
-        .sidebar-title { padding: 4px 10px 1px; font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; }
-        .sidebar-item {
-          padding: 3px 10px 3px 14px; font-size: 11px; cursor: pointer; color: var(--text);
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: background .1s;
-        }
-        .sidebar-item:hover { background: var(--accent); color: white; border-radius: 3px; margin: 0 3px; padding-left: 11px; }
-        .sidebar-hint { padding: 4px 10px; font-size: 10px; color: var(--text2); font-style: italic; }
+        .sb-item:hover { background: var(--accent); color: white; border-radius: 3px; margin: 0 4px; padding-left: 16px; }
+        .sb-hint { padding: 8px 14px; font-size: 11px; color: var(--text2); }
         .hidden { display: none !important; }
 
         /* Panels */
         .panels { display: flex; flex: 1; overflow: hidden; }
         .panel { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-        .divider { width: 4px; cursor: col-resize; background: var(--border); transition: background .1s; flex-shrink: 0; }
-        .divider:hover { background: var(--accent); }
-        .panel-header {
-          display: flex; padding: 0 10px; background: var(--bg3);
+        .divider { width: 1px; cursor: col-resize; background: var(--border); flex-shrink: 0; }
+        .divider:hover { background: var(--accent); width: 2px; }
+
+        /* Tabs (Zed-style: minimal, no border) */
+        .tabs {
+          display: flex; padding: 0 12px;
+          font-size: 12px; color: var(--text2);
+          min-height: 28px; align-items: stretch;
           border-bottom: 1px solid var(--border);
-          font-size: 11px; color: var(--text2); min-height: 26px; align-items: stretch;
         }
         .tab {
-          padding: 0 10px; cursor: pointer; border-bottom: 2px solid transparent;
-          display: flex; align-items: center; transition: all .1s; user-select: none;
+          padding: 0 12px; cursor: pointer;
+          border-bottom: 2px solid transparent;
+          display: flex; align-items: center;
+          transition: color .1s; user-select: none;
         }
-        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab.active { color: var(--text); border-bottom-color: var(--accent); }
         .tab:hover:not(.active) { color: var(--text); }
 
-        /* Editor + Minimap */
+        /* Editor */
         .editor-with-minimap { flex: 1; display: flex; overflow: hidden; }
         .editor-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .editor-container { flex: 1; overflow: hidden; position: relative; }
+        .editor-container { flex: 1; overflow: hidden; }
+        .editor-container .cm-editor { height: 100%; }
 
-        /* Visual (WYSIWYG) editor */
+        /* Visual editor */
         .visual-editor {
-          height: 100%; overflow-y: auto; padding: 1.5em;
+          height: 100%; overflow-y: auto; padding: 2em;
           font-family: -apple-system, BlinkMacSystemFont, Georgia, serif;
-          font-size: 14px; line-height: 1.7; color: var(--text);
+          font-size: 15px; line-height: 1.75; color: var(--text);
           background: var(--bg2); outline: none;
-          max-width: 52em; margin: 0 auto;
+          max-width: 48em; margin: 0 auto;
         }
         .visual-editor:focus { outline: none; }
-        .visual-editor h1 { font-size: 1.8em; border-bottom: 2px solid var(--accent); padding-bottom: .3em; margin-bottom: .6em; }
-        .visual-editor h2 { font-size: 1.3em; margin-top: 1.5em; margin-bottom: .5em; color: var(--text); }
-        .visual-editor h3 { font-size: 1.1em; margin-top: 1.2em; margin-bottom: .4em; }
+        .visual-editor h1 { font-size: 1.8em; font-weight: 600; margin-bottom: .6em; padding-bottom: .3em; border-bottom: 1px solid var(--border); }
+        .visual-editor h2 { font-size: 1.3em; font-weight: 600; margin-top: 1.5em; margin-bottom: .4em; }
+        .visual-editor h3 { font-size: 1.1em; font-weight: 600; margin-top: 1.2em; }
         .visual-editor ul, .visual-editor ol { padding-left: 1.5em; }
-        .visual-editor li { margin-bottom: .3em; }
         .visual-editor a { color: var(--accent); }
-        .visual-editor code { background: var(--bg3); padding: .15em .4em; border-radius: 3px; font-size: .9em; }
-        .visual-editor pre { background: var(--bg3); padding: 1em; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border); }
-        .visual-editor blockquote { border-left: 3px solid var(--accent); padding-left: 1em; color: var(--text2); margin: 1em 0; }
-        .visual-editor table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-        .visual-editor th, .visual-editor td { border: 1px solid var(--border); padding: .5em .8em; }
-        .visual-editor th { background: var(--bg3); font-weight: 600; }
-        .visual-editor img { max-width: 100%; }
-        .editor-container .cm-editor { height: 100%; }
+        .visual-editor code { background: var(--bg3); padding: .1em .35em; border-radius: 3px; font-size: .9em; }
+        .visual-editor pre { background: var(--bg3); padding: 1em; border-radius: 6px; }
+        .visual-editor blockquote { border-left: 2px solid var(--border); padding-left: 1em; color: var(--text2); }
+        .visual-editor table { border-collapse: collapse; width: 100%; }
+        .visual-editor th, .visual-editor td { border: 1px solid var(--border); padding: .4em .7em; }
+        .visual-editor th { background: var(--bg3); }
 
         /* Minimap */
         .minimap {
-          width: 60px; background: var(--bg3);
-          border-left: 1px solid var(--border);
+          width: 50px; background: var(--bg);
           position: relative; overflow: hidden; flex-shrink: 0; cursor: pointer;
+          border-left: 1px solid var(--border);
         }
         .mm-lines { padding: 4px 2px; }
-        .mm-line { height: 2px; margin-bottom: 0.5px; background: var(--text2); opacity: 0.2; border-radius: 1px; }
-        .mm-heading { opacity: 0.7; background: var(--accent); height: 2.5px; }
-        .mm-list { opacity: 0.3; }
-        .mm-block { opacity: 0.5; background: var(--text3); }
-        .mm-comment { opacity: 0.15; }
-        .mm-empty { opacity: 0; height: 1.5px; }
+        .mm-line { height: 1.5px; margin-bottom: .5px; background: var(--text2); opacity: .15; border-radius: 1px; }
+        .mm-h { opacity: .5; background: var(--accent); height: 2px; }
+        .mm-l { opacity: .2; }
+        .mm-e { opacity: 0; height: 1px; }
         .mm-viewport {
           position: absolute; left: 0; right: 0;
-          background: var(--accent); opacity: 0.12;
+          background: var(--accent); opacity: .08;
           border: 1px solid var(--accent); border-radius: 2px;
-          pointer-events: none; transition: top .1s;
+          pointer-events: none;
         }
 
         #preview { flex: 1; border: none; background: var(--bg2); }
 
-        /* Status bar */
+        /* Status bar (Zed-style: thin, subtle) */
         .status-bar {
           display: flex; align-items: center; justify-content: space-between;
-          padding: 1px 10px; background: var(--accent); color: white;
-          font-size: 10px; min-height: 20px;
+          padding: 0 12px; background: var(--bg3);
+          border-top: 1px solid var(--border);
+          font-size: 11px; color: var(--text2); min-height: 22px;
         }
-        .status-right { display: flex; gap: 10px; }
-        .shortcut-hint { opacity: .6; }
-        #status-git { margin-left: 10px; opacity: .85; }
-        #status-pos { opacity: .85; }
+        .status-r { display: flex; gap: 12px; }
+        #status-git { margin-left: 12px; }
 
         /* Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(128,128,128,.25); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,.4); }
+        ::-webkit-scrollbar-thumb { background: rgba(128,128,128,.2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,.35); }
         CSS
       end
     end

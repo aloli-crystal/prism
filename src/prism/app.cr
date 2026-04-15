@@ -32,6 +32,11 @@ module Prism
       @webview.destroy
     end
 
+    # Appelé par le callback du menu natif macOS
+    def handle_menu_action(action_id : String)
+      @webview.eval("window.prism.menuAction('#{action_id}')")
+    end
+
     private def resolve_file_arg(arg : String?) : String?
       return nil unless arg
       path = File.expand_path(arg)

@@ -1,52 +1,37 @@
 import { EditorView, basicSetup } from "codemirror"
-import { EditorState, Compartment } from "@codemirror/state"
+import { EditorState } from "@codemirror/state"
 import { StreamLanguage } from "@codemirror/language"
 import { asciidoc } from "codemirror-asciidoc"
 import { css } from "@codemirror/lang-css"
-import { search, openSearchPanel, closeSearchPanel } from "@codemirror/search"
+import { search, openSearchPanel } from "@codemirror/search"
 
-// --- Theme ---
-const macosTheme = (dark) =>
+// --- Theme (Zed-inspired: minimal, clean) ---
+const zedTheme = (dark) =>
   EditorView.theme(
     {
       "&": {
-        fontSize: "13px",
+        fontSize: "13.5px",
         fontFamily: '"SF Mono", "Fira Code", Menlo, monospace',
         height: "100%",
-        backgroundColor: dark ? "#1e1e1e" : "#ffffff",
-        color: dark ? "#d4d4d4" : "#1d1d1f",
-      },
-      ".cm-content": { padding: "12px 0", caretColor: dark ? "#4fc1ff" : "#0071e3" },
-      ".cm-cursor": { borderLeftColor: dark ? "#4fc1ff" : "#0071e3" },
-      ".cm-activeLine": { backgroundColor: dark ? "#2a2a2a" : "#f0f4ff" },
-      ".cm-gutters": {
         backgroundColor: dark ? "#1e1e1e" : "#fafafa",
-        color: dark ? "#555" : "#c7c7cc",
+        color: dark ? "#c8c8c8" : "#2e2e2e",
+      },
+      ".cm-content": { padding: "16px 0", caretColor: dark ? "#528bff" : "#0071e3", lineHeight: "1.65" },
+      ".cm-cursor": { borderLeftColor: dark ? "#528bff" : "#0071e3", borderLeftWidth: "2px" },
+      ".cm-activeLine": { backgroundColor: dark ? "#ffffff06" : "#00000005" },
+      ".cm-gutters": {
+        backgroundColor: "transparent",
+        color: dark ? "#444" : "#c0c0c0",
         border: "none",
-        borderRight: dark ? "1px solid #333" : "1px solid #e5e5e7",
+        paddingRight: "8px",
       },
-      ".cm-activeLineGutter": {
-        backgroundColor: dark ? "#2a2a2a" : "#f0f4ff",
-        color: dark ? "#888" : "#86868b",
-      },
-      ".cm-selectionBackground": {
-        backgroundColor: dark ? "#264f78 !important" : "#b4d8fd !important",
-      },
-      "&.cm-focused .cm-selectionBackground": {
-        backgroundColor: dark ? "#264f78 !important" : "#b4d8fd !important",
-      },
-      // Search panel style
-      ".cm-panels": {
-        backgroundColor: dark ? "#252526" : "#f5f5f7",
-        borderBottom: dark ? "1px solid #333" : "1px solid #e5e5e7",
-      },
-      ".cm-searchMatch": {
-        backgroundColor: dark ? "#515c6a" : "#ffeaa7",
-        outline: dark ? "1px solid #6a7585" : "1px solid #fdcb6e",
-      },
-      ".cm-searchMatch-selected": {
-        backgroundColor: dark ? "#264f78" : "#74b9ff",
-      },
+      ".cm-activeLineGutter": { backgroundColor: "transparent", color: dark ? "#666" : "#999" },
+      ".cm-selectionBackground": { backgroundColor: dark ? "#264f78 !important" : "#d7e8fc !important" },
+      "&.cm-focused .cm-selectionBackground": { backgroundColor: dark ? "#264f78 !important" : "#d7e8fc !important" },
+      ".cm-panels": { backgroundColor: dark ? "#252526" : "#f5f5f5", border: "none" },
+      ".cm-searchMatch": { backgroundColor: dark ? "#515c6a" : "#fff3b0", outline: "none" },
+      ".cm-searchMatch-selected": { backgroundColor: dark ? "#264f78" : "#a8d4ff" },
+      ".cm-line": { paddingLeft: "4px" },
     },
     { dark }
   )
@@ -71,25 +56,24 @@ Bienvenue dans *Prism*, l'éditeur AsciiDoc en Crystal.
 
 const defaultCss = `body {
   font-family: -apple-system, BlinkMacSystemFont, Georgia, serif;
-  line-height: 1.7; color: #1d1d1f;
-  max-width: 42em; margin: 0 auto; padding: 1.5em;
+  line-height: 1.75; color: #2e2e2e;
+  max-width: 44em; margin: 0 auto; padding: 2em;
 }
-h1 { color: #1d1d1f; font-size: 1.8em; border-bottom: 2px solid #0071e3; padding-bottom: .3em; margin-bottom: .6em; }
-h2 { color: #2d3748; font-size: 1.3em; margin-top: 1.5em; margin-bottom: .5em; }
-h3 { color: #4a5568; font-size: 1.1em; margin-top: 1.2em; margin-bottom: .4em; }
-strong { color: #c0392b; }
-em { color: #6e6e73; }
+h1 { font-size: 1.8em; font-weight: 600; margin-bottom: .6em; padding-bottom: .4em; border-bottom: 1px solid #e0e0e0; }
+h2 { font-size: 1.3em; font-weight: 600; margin-top: 1.8em; margin-bottom: .5em; }
+h3 { font-size: 1.1em; font-weight: 600; margin-top: 1.4em; margin-bottom: .4em; }
+strong { font-weight: 600; }
 a { color: #0071e3; text-decoration: none; }
 a:hover { text-decoration: underline; }
 ul, ol { padding-left: 1.5em; }
-li { margin-bottom: .3em; }
-code, pre { font-family: "SF Mono", Menlo, monospace; font-size: .9em; background: #f5f5f7; border-radius: 4px; }
-code { padding: .15em .4em; }
-pre { padding: 1em; overflow-x: auto; border: 1px solid #e5e5e7; }
-blockquote { border-left: 3px solid #0071e3; padding-left: 1em; color: #6e6e73; margin: 1em 0; }
+li { margin-bottom: .4em; }
+code, pre { font-family: "SF Mono", Menlo, monospace; font-size: .9em; }
+code { background: #f0f0f0; padding: .15em .4em; border-radius: 3px; }
+pre { background: #f5f5f5; padding: 1em; border-radius: 6px; overflow-x: auto; }
+blockquote { border-left: 2px solid #d0d0d0; padding-left: 1em; color: #666; margin: 1em 0; }
 table { border-collapse: collapse; width: 100%; margin: 1em 0; }
-th, td { border: 1px solid #e5e5e7; padding: .5em .8em; text-align: left; }
-th { background: #f5f5f7; font-weight: 600; }
+th, td { border: 1px solid #e0e0e0; padding: .5em .8em; }
+th { background: #f5f5f5; font-weight: 600; }
 `
 
 // --- State ---
@@ -102,95 +86,72 @@ let previewVisible = true
 let sidebarVisible = false
 let darkMode = false
 let zenMode = false
-let minimapVisible = true
+let minimapVisible = false // Hidden by default (Zed style)
 
 // --- Editor ---
 function createEditor(parent, lang, doc, onChange) {
   return new EditorView({
     state: EditorState.create({
       doc,
-      extensions: [
-        basicSetup,
-        lang,
-        macosTheme(darkMode),
-        search({ top: true }),
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged && onChange) onChange()
-        }),
+      extensions: [basicSetup, lang, zedTheme(darkMode), search({ top: true }),
+        EditorView.updateListener.of((u) => { if (u.docChanged && onChange) onChange() }),
       ],
     }),
     parent,
   })
 }
 
-function replaceEditorContent(editor, text) {
+function replaceContent(editor, text) {
   editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: text } })
 }
 
-// --- WYSIWYG formatting toolbar ---
-function insertAround(editor, before, after) {
-  const sel = editor.state.selection.main
-  const selected = editor.state.sliceDoc(sel.from, sel.to)
-  editor.dispatch({
-    changes: { from: sel.from, to: sel.to, insert: before + selected + after },
-    selection: { anchor: sel.from + before.length, head: sel.from + before.length + selected.length },
+// --- AsciiDoc formatting (source mode) ---
+function insertAround(before, after) {
+  const e = asciidocEditor, sel = e.state.selection.main
+  const txt = e.state.sliceDoc(sel.from, sel.to)
+  e.dispatch({
+    changes: { from: sel.from, to: sel.to, insert: before + txt + after },
+    selection: { anchor: sel.from + before.length, head: sel.from + before.length + txt.length },
   })
-  editor.focus()
+  e.focus()
 }
 
-function insertAtLineStart(editor, prefix) {
-  const sel = editor.state.selection.main
-  const line = editor.state.doc.lineAt(sel.from)
-  editor.dispatch({
-    changes: { from: line.from, to: line.from, insert: prefix },
-  })
-  editor.focus()
+function insertAtLine(prefix) {
+  const e = asciidocEditor, line = e.state.doc.lineAt(e.state.selection.main.from)
+  e.dispatch({ changes: { from: line.from, to: line.from, insert: prefix } })
+  e.focus()
 }
 
-function applyFormat(format) {
-  if (activeTab === "visual") {
-    applyVisualFormat(format)
-  } else {
-    applyAsciidocFormat(format)
+function applyFormat(fmt) {
+  if (activeTab === "visual") { applyVisualFormat(fmt); return }
+  switch (fmt) {
+    case "bold": insertAround("*", "*"); break
+    case "italic": insertAround("_", "_"); break
+    case "mono": insertAround("`", "`"); break
+    case "h1": insertAtLine("= "); break
+    case "h2": insertAtLine("== "); break
+    case "h3": insertAtLine("=== "); break
+    case "ul": insertAtLine("* "); break
+    case "ol": insertAtLine(". "); break
+    case "link": insertAround("https://", "[lien]"); break
+    case "image": insertAround("image::", "[alt]"); break
+    case "code": {
+      const sel = asciidocEditor.state.selection.main
+      const t = asciidocEditor.state.sliceDoc(sel.from, sel.to)
+      t.includes("\n") ? insertAround("[source]\n----\n", "\n----") : insertAround("`", "`")
+      break
+    }
+    case "quote": insertAround("[quote]\n____\n", "\n____"); break
+    case "table": insertAround(`[cols="1,1", options="header"]\n|===\n| Col 1 | Col 2\n\n| A | B\n|===`, ""); break
+    case "admonition": insertAtLine("NOTE: "); break
   }
   schedulePreview()
 }
 
-function applyAsciidocFormat(format) {
-  const editor = asciidocEditor
-  switch (format) {
-    case "bold": insertAround(editor, "*", "*"); break
-    case "italic": insertAround(editor, "_", "_"); break
-    case "mono": insertAround(editor, "`", "`"); break
-    case "h1": insertAtLineStart(editor, "= "); break
-    case "h2": insertAtLineStart(editor, "== "); break
-    case "h3": insertAtLineStart(editor, "=== "); break
-    case "ul": insertAtLineStart(editor, "* "); break
-    case "ol": insertAtLineStart(editor, ". "); break
-    case "link": insertAround(editor, "https://", "[lien]"); break
-    case "image": insertAround(editor, "image::", "[alt]"); break
-    case "code": {
-      const sel = editor.state.selection.main
-      const text = editor.state.sliceDoc(sel.from, sel.to)
-      if (text.includes("\n")) insertAround(editor, "[source]\n----\n", "\n----")
-      else insertAround(editor, "`", "`")
-      break
-    }
-    case "quote": insertAround(editor, "[quote]\n____\n", "\n____"); break
-    case "table": {
-      const tpl = `[cols="1,1", options="header"]\n|===\n| Col 1 | Col 2\n\n| A | B\n|===`
-      insertAround(editor, tpl, "")
-      break
-    }
-    case "admonition": insertAtLineStart(editor, "NOTE: "); break
-  }
-}
-
-function applyVisualFormat(format) {
-  // execCommand pour l'éditeur contenteditable
+function applyVisualFormat(fmt) {
   const ve = document.getElementById("visual-editor")
   ve.focus()
-  switch (format) {
+  switch (fmt) {
     case "bold": document.execCommand("bold"); break
     case "italic": document.execCommand("italic"); break
     case "mono": document.execCommand("insertHTML", false, "<code>" + (window.getSelection().toString() || "code") + "</code>"); break
@@ -199,106 +160,86 @@ function applyVisualFormat(format) {
     case "h3": document.execCommand("formatBlock", false, "h3"); break
     case "ul": document.execCommand("insertUnorderedList"); break
     case "ol": document.execCommand("insertOrderedList"); break
-    case "link": {
-      const url = prompt("URL :")
-      if (url) document.execCommand("createLink", false, url)
-      break
-    }
+    case "link": { const u = prompt("URL :"); if (u) document.execCommand("createLink", false, u); break }
     case "quote": document.execCommand("formatBlock", false, "blockquote"); break
-    case "admonition": document.execCommand("insertHTML", false, "<div class='admonition'><strong>NOTE:</strong> </div>"); break
   }
 }
 
-// --- Minimap ---
-function updateMinimap() {
-  const container = document.getElementById("minimap")
-  if (!container || !minimapVisible) return
+// --- HTML → AsciiDoc converter ---
+function htmlToAsciidoc(el) {
+  let out = ""
+  for (const node of el.childNodes) {
+    if (node.nodeType === 3) { out += node.textContent; continue }
+    if (node.nodeType !== 1) continue
+    const tag = node.tagName.toLowerCase()
+    const inner = node.innerHTML ? htmlToAsciidocInline(node) : ""
+    const text = node.textContent || ""
+    switch (tag) {
+      case "h1": out += "\n= " + text + "\n"; break
+      case "h2": out += "\n== " + text + "\n"; break
+      case "h3": out += "\n=== " + text + "\n"; break
+      case "h4": out += "\n==== " + text + "\n"; break
+      case "p": out += "\n" + htmlToAsciidocInline(node) + "\n"; break
+      case "strong": case "b": out += "*" + text + "*"; break
+      case "em": case "i": out += "_" + text + "_"; break
+      case "code": out += "`" + text + "`"; break
+      case "pre": out += "\n----\n" + text + "\n----\n"; break
+      case "blockquote": out += "\n____\n" + htmlToAsciidoc(node) + "\n____\n"; break
+      case "ul": out += "\n" + htmlToAsciidocList(node, "*") + "\n"; break
+      case "ol": out += "\n" + htmlToAsciidocList(node, ".") + "\n"; break
+      case "a": out += node.href ? node.href + "[" + text + "]" : text; break
+      case "br": out += " +\n"; break
+      case "div": out += "\n" + htmlToAsciidoc(node) + "\n"; break
+      default: out += htmlToAsciidoc(node); break
+    }
+  }
+  return out
+}
 
+function htmlToAsciidocInline(el) {
+  let out = ""
+  for (const node of el.childNodes) {
+    if (node.nodeType === 3) { out += node.textContent; continue }
+    if (node.nodeType !== 1) continue
+    const tag = node.tagName.toLowerCase()
+    const text = node.textContent || ""
+    switch (tag) {
+      case "strong": case "b": out += "*" + text + "*"; break
+      case "em": case "i": out += "_" + text + "_"; break
+      case "code": out += "`" + text + "`"; break
+      case "a": out += (node.href || "") + "[" + text + "]"; break
+      default: out += text; break
+    }
+  }
+  return out
+}
+
+function htmlToAsciidocList(el, marker) {
+  let out = ""
+  for (const li of el.children) {
+    if (li.tagName.toLowerCase() === "li") out += marker + " " + li.textContent.trim() + "\n"
+  }
+  return out
+}
+
+// --- Visual editor ---
+async function updateVisualEditor() {
   const content = asciidocEditor.state.doc.toString()
-  const lines = content.split("\n")
-  const totalLines = lines.length
-  const editorScroller = asciidocEditor.dom.querySelector(".cm-scroller")
-  if (!editorScroller) return
-
-  // Build minimap HTML
-  let html = ""
-  for (let i = 0; i < totalLines; i++) {
-    const line = lines[i]
-    let cls = "mm-line"
-    if (/^={1,5}\s/.test(line)) cls += " mm-heading"
-    else if (/^\*\s|^\.\s/.test(line)) cls += " mm-list"
-    else if (/^-{4}|^\.{4}|^\|===/.test(line)) cls += " mm-block"
-    else if (/^\/\//.test(line)) cls += " mm-comment"
-    else if (line.trim() === "") cls += " mm-empty"
-
-    const w = Math.min(100, Math.max(5, line.length * 1.2))
-    html += `<div class="${cls}" style="width:${w}%"></div>`
-  }
-  container.querySelector(".mm-lines").innerHTML = html
-
-  // Viewport indicator
-  const scrollPct = editorScroller.scrollTop / (editorScroller.scrollHeight || 1)
-  const viewPct = editorScroller.clientHeight / (editorScroller.scrollHeight || 1)
-  const viewport = container.querySelector(".mm-viewport")
-  viewport.style.top = (scrollPct * 100) + "%"
-  viewport.style.height = Math.max(5, viewPct * 100) + "%"
+  const style = styleEditor.state.doc.toString()
+  const result = await window.convertAsciidoc(content)
+  const ve = document.getElementById("visual-editor")
+  ve.innerHTML = result
+  let styleEl = ve.parentElement.querySelector(".visual-user-style")
+  if (!styleEl) { styleEl = document.createElement("style"); styleEl.className = "visual-user-style"; ve.parentElement.prepend(styleEl) }
+  styleEl.textContent = style.replace(/body\b/g, "#visual-editor")
 }
 
-function setupMinimap() {
-  const container = document.getElementById("minimap")
-  if (!container) return
-
-  // Click to navigate
-  container.addEventListener("click", (e) => {
-    const rect = container.getBoundingClientRect()
-    const pct = (e.clientY - rect.top) / rect.height
-    const scroller = asciidocEditor.dom.querySelector(".cm-scroller")
-    if (scroller) {
-      scroller.scrollTop = pct * (scroller.scrollHeight - scroller.clientHeight)
-    }
-  })
-
-  // Update on scroll
-  const scroller = asciidocEditor.dom.querySelector(".cm-scroller")
-  if (scroller) {
-    scroller.addEventListener("scroll", () => {
-      requestAnimationFrame(() => updateMinimap())
-    })
-  }
-
-  // Update on content change
-  setInterval(updateMinimap, 1000)
-  updateMinimap()
-}
-
-// --- Breadcrumb ---
-function updateBreadcrumb() {
-  const el = document.getElementById("breadcrumb")
-  if (!el) return
-
-  const pos = asciidocEditor.state.selection.main.head
-  const doc = asciidocEditor.state.doc
-  const lineNo = doc.lineAt(pos).number
-  const lines = doc.toString().split("\n")
-
-  const crumbs = []
-  for (let i = 0; i < lineNo; i++) {
-    const m = lines[i].match(/^(={1,5})\s+(.+)/)
-    if (m) {
-      const level = m[1].length
-      // Remove deeper or equal levels
-      while (crumbs.length > 0 && crumbs[crumbs.length - 1].level >= level) crumbs.pop()
-      crumbs.push({ level, title: m[2], line: i })
-    }
-  }
-
-  if (crumbs.length === 0) {
-    el.innerHTML = `<span class="bc-item">Document</span>`
-  } else {
-    el.innerHTML = crumbs
-      .map((c) => `<span class="bc-item" onclick="window.prism.goToLine(${c.line})">${c.title}</span>`)
-      .join(`<span class="bc-sep">›</span>`)
-  }
+function syncVisualToAsciidoc() {
+  const ve = document.getElementById("visual-editor")
+  if (!ve) return
+  const adoc = htmlToAsciidoc(ve).trim()
+  replaceContent(asciidocEditor, adoc)
+  schedulePreview()
 }
 
 // --- Preview ---
@@ -311,13 +252,7 @@ async function updatePreview() {
   const content = asciidocEditor.state.doc.toString()
   const style = styleEditor.state.doc.toString()
   const result = await window.convertAsciidoc(content)
-
-  // Sync visual editor (si on n'est pas en train d'éditer dedans)
-  const ve = document.getElementById("visual-editor")
-  if (ve && activeTab !== "visual") {
-    ve.innerHTML = result
-  }
-
+  if (activeTab !== "visual") { document.getElementById("visual-editor").innerHTML = result }
   renderPreview(result, style)
   markModified()
   updateBreadcrumb()
@@ -325,219 +260,211 @@ async function updatePreview() {
 }
 
 function renderPreview(h, style) {
-  const preview = document.getElementById("preview")
-  if (!preview || !previewVisible) return
-  const doc = preview.contentDocument
-  const scrollTop = doc?.documentElement?.scrollTop || 0
-  doc.open()
-  doc.write(`<html><head><style>${style}</style></head><body>${h}</body></html>`)
-  doc.close()
-  doc.documentElement.scrollTop = scrollTop
+  const p = document.getElementById("preview")
+  if (!p || !previewVisible) return
+  const d = p.contentDocument, st = d?.documentElement?.scrollTop || 0
+  d.open(); d.write(`<html><head><style>${style}</style></head><body>${h}</body></html>`); d.close()
+  d.documentElement.scrollTop = st
 }
 
-function markModified() {
-  if (!isModified) { isModified = true; updateStatusBar() }
-}
+function markModified() { if (!isModified) { isModified = true; updateStatus() } }
 
-function updateStatusBar() {
+function updateStatus() {
   const el = document.getElementById("status-file")
   if (!el) return
-  const name = currentFilePath ? currentFilePath.split("/").pop() : "Sans titre"
-  el.textContent = name + (isModified ? " •" : "")
-
-  // Cursor position
+  el.textContent = (currentFilePath ? currentFilePath.split("/").pop() : "Sans titre") + (isModified ? " •" : "")
   const pos = asciidocEditor.state.selection.main.head
   const line = asciidocEditor.state.doc.lineAt(pos)
-  const col = pos - line.from + 1
   const posEl = document.getElementById("status-pos")
-  if (posEl) posEl.textContent = `Ln ${line.number}, Col ${col}`
+  if (posEl) posEl.textContent = `${line.number}:${pos - line.from + 1}`
+}
+
+// --- Breadcrumb ---
+function updateBreadcrumb() {
+  const el = document.getElementById("breadcrumb")
+  if (!el) return
+  const pos = asciidocEditor.state.selection.main.head
+  const lines = asciidocEditor.state.doc.toString().split("\n")
+  const lineNo = asciidocEditor.state.doc.lineAt(pos).number
+  const crumbs = []
+  for (let i = 0; i < lineNo; i++) {
+    const m = lines[i].match(/^(={1,5})\s+(.+)/)
+    if (m) {
+      while (crumbs.length > 0 && crumbs[crumbs.length - 1].level >= m[1].length) crumbs.pop()
+      crumbs.push({ level: m[1].length, title: m[2], line: i })
+    }
+  }
+  el.innerHTML = crumbs.length === 0
+    ? `<span class="bc-item">Document</span>`
+    : crumbs.map((c) => `<span class="bc-item" onclick="window.prism.goToLine(${c.line})">${c.title}</span>`).join(`<span class="bc-sep">›</span>`)
+}
+
+// --- Minimap ---
+function updateMinimap() {
+  const c = document.getElementById("minimap")
+  if (!c || !minimapVisible) return
+  const lines = asciidocEditor.state.doc.toString().split("\n")
+  const scroller = asciidocEditor.dom.querySelector(".cm-scroller")
+  if (!scroller) return
+  let h = ""
+  for (const line of lines) {
+    let cls = "mm-line"
+    if (/^={1,5}\s/.test(line)) cls += " mm-h"
+    else if (/^\*\s|^\.\s/.test(line)) cls += " mm-l"
+    else if (line.trim() === "") cls += " mm-e"
+    h += `<div class="${cls}" style="width:${Math.min(100, Math.max(5, line.length * 1.2))}%"></div>`
+  }
+  c.querySelector(".mm-lines").innerHTML = h
+  const pct = scroller.scrollTop / (scroller.scrollHeight || 1)
+  const vp = scroller.clientHeight / (scroller.scrollHeight || 1)
+  const v = c.querySelector(".mm-viewport")
+  v.style.top = (pct * 100) + "%"
+  v.style.height = Math.max(5, vp * 100) + "%"
+}
+
+function setupMinimap() {
+  const c = document.getElementById("minimap")
+  if (!c) return
+  c.addEventListener("click", (e) => {
+    const pct = (e.clientY - c.getBoundingClientRect().top) / c.offsetHeight
+    const s = asciidocEditor.dom.querySelector(".cm-scroller")
+    if (s) s.scrollTop = pct * (s.scrollHeight - s.clientHeight)
+  })
+  const s = asciidocEditor.dom.querySelector(".cm-scroller")
+  if (s) s.addEventListener("scroll", () => requestAnimationFrame(updateMinimap))
 }
 
 // --- Toggles ---
-function togglePreview() {
-  previewVisible = !previewVisible
+function togglePreview() { previewVisible = !previewVisible; applyLayout(); if (previewVisible) updatePreview(); savePref() }
+function toggleSidebar() { sidebarVisible = !sidebarVisible; applyLayout(); if (sidebarVisible) loadSidebar(); savePref() }
+function toggleDark() { darkMode = !darkMode; document.body.classList.toggle("dark", darkMode); recreate(); savePref() }
+function toggleZen() { zenMode = !zenMode; document.body.classList.toggle("zen", zenMode) }
+function toggleMinimap() { minimapVisible = !minimapVisible; applyLayout(); if (minimapVisible) updateMinimap() }
+
+function applyLayout() {
   document.getElementById("divider").style.display = previewVisible ? "" : "none"
   document.querySelector(".preview-panel").style.display = previewVisible ? "" : "none"
-  if (previewVisible) updatePreview()
-  savePref()
-}
-
-function toggleSidebar() {
-  sidebarVisible = !sidebarVisible
   document.querySelector(".sidebar").classList.toggle("hidden", !sidebarVisible)
-  savePref()
-  if (sidebarVisible) loadSidebar()
-}
-
-function toggleDarkMode() {
-  darkMode = !darkMode
-  document.body.classList.toggle("dark", darkMode)
-  recreateEditors()
-  savePref()
-}
-
-function toggleZenMode() {
-  zenMode = !zenMode
-  document.body.classList.toggle("zen", zenMode)
-}
-
-function toggleMinimap() {
-  minimapVisible = !minimapVisible
   document.getElementById("minimap").classList.toggle("hidden", !minimapVisible)
-  if (minimapVisible) updateMinimap()
 }
 
-function recreateEditors() {
-  const adocContent = asciidocEditor.state.doc.toString()
-
-  const cssContent = styleEditor.state.doc.toString()
+function recreate() {
+  const a = asciidocEditor.state.doc.toString(), c = styleEditor.state.doc.toString()
   asciidocEditor.destroy(); styleEditor.destroy()
-  asciidocEditor = createEditor(document.getElementById("editor-asciidoc"), StreamLanguage.define(asciidoc), adocContent, schedulePreview)
-  styleEditor = createEditor(document.getElementById("editor-style"), css(), cssContent, schedulePreview)
+  asciidocEditor = createEditor(document.getElementById("editor-asciidoc"), StreamLanguage.define(asciidoc), a, schedulePreview)
+  styleEditor = createEditor(document.getElementById("editor-style"), css(), c, schedulePreview)
   setupMinimap()
 }
 
 // --- Sidebar ---
 async function loadSidebar() {
-  const sidebar = document.querySelector(".sidebar-content")
-  if (!sidebar) return
+  const sb = document.querySelector(".sidebar-content")
+  if (!sb) return
   let h = ""
   try {
-    const recent = JSON.parse(await window.getRecentFiles(""))
-    if (recent.length > 0) {
-      h += `<div class="sidebar-section"><div class="sidebar-title">Récents</div>`
-      for (const f of recent) {
-        h += `<div class="sidebar-item" onclick="window.prism.openPath('${f}')">${f.split("/").pop()}</div>`
-      }
+    const r = JSON.parse(await window.getRecentFiles(""))
+    if (r.length > 0) {
+      h += `<div class="sb-section"><div class="sb-title">Récents</div>`
+      for (const f of r) h += `<div class="sb-item" onclick="window.prism.openPath('${f}')">${f.split("/").pop()}</div>`
       h += `</div>`
     }
   } catch (e) {}
   try {
     const info = JSON.parse(await window.getGitInfo(""))
     if (info.branch) {
-      h += `<div class="sidebar-section"><div class="sidebar-title">Git — ${info.branch}</div>`
-      if (!info.clean) h += `<div class="sidebar-hint">${info.modified} modifié(s)</div>`
+      h += `<div class="sb-section"><div class="sb-title">Git — ${info.branch}</div>`
       const files = JSON.parse(await window.getGitFileTree(""))
-      for (const f of files) {
-        h += `<div class="sidebar-item" onclick="window.prism.openPath('${f.path}')">${f.name}</div>`
-      }
+      for (const f of files) h += `<div class="sb-item" onclick="window.prism.openPath('${f.path}')">${f.name}</div>`
       h += `</div>`
     }
   } catch (e) {}
-  if (!h) h = `<div class="sidebar-hint">Ouvrez un fichier pour commencer</div>`
-  sidebar.innerHTML = h
+  if (!h) h = `<div class="sb-hint">Ouvrez un fichier pour commencer</div>`
+  sb.innerHTML = h
 }
 
-// --- File operations ---
-async function doOpen() {
-  const result = await window.openFile("")
-  if (result) handleOpenResult(result)
+// --- File ops ---
+async function doOpen() { const r = await window.openFile(""); if (r) handleOpen(r) }
+async function doOpenPath(p) { const r = await window.openFilePath(p); if (r) handleOpen(r) }
+function handleOpen(r) {
+  const d = JSON.parse(r); if (d.error) { alert(d.error); return }; if (d.content === undefined) return
+  currentFilePath = d.path || ""; isModified = false
+  replaceContent(asciidocEditor, d.content); if (d.css) replaceContent(styleEditor, d.css)
+  updateStatus(); updateGit(); updatePreview(); if (sidebarVisible) loadSidebar()
 }
-
-async function doOpenPath(path) {
-  const result = await window.openFilePath(path)
-  if (result) handleOpenResult(result)
-}
-
-function handleOpenResult(result) {
-  const data = JSON.parse(result)
-  if (data.error) { alert("Erreur : " + data.error); return }
-  if (data.content === undefined) return
-  currentFilePath = data.path || ""
-  isModified = false
-  replaceEditorContent(asciidocEditor, data.content)
-  if (data.css) replaceEditorContent(styleEditor, data.css)
-  updateStatusBar(); updateGitStatus(); updatePreview()
-  if (sidebarVisible) loadSidebar()
-}
-
 async function doSave() {
-  const c = asciidocEditor.state.doc.toString()
-  const s = styleEditor.state.doc.toString()
-  const result = await window.saveFile(c, s, currentFilePath)
-  if (!result) return
-  const data = JSON.parse(result)
-  if (data.error) { alert("Erreur : " + data.error); return }
-  if (data.path) currentFilePath = data.path
-  isModified = false; updateStatusBar(); updateGitStatus()
+  const r = await window.saveFile(asciidocEditor.state.doc.toString(), styleEditor.state.doc.toString(), currentFilePath)
+  if (!r) return; const d = JSON.parse(r); if (d.error) { alert(d.error); return }
+  if (d.path) currentFilePath = d.path; isModified = false; updateStatus(); updateGit()
 }
-
 async function doSaveAs() {
-  const c = asciidocEditor.state.doc.toString()
-  const s = styleEditor.state.doc.toString()
-  const result = await window.saveFileAs(c, s)
-  if (!result) return
-  const data = JSON.parse(result)
-  if (data.error) { alert("Erreur : " + data.error); return }
-  if (data.path) currentFilePath = data.path
-  isModified = false; updateStatusBar()
+  const r = await window.saveFileAs(asciidocEditor.state.doc.toString(), styleEditor.state.doc.toString())
+  if (!r) return; const d = JSON.parse(r); if (d.error) { alert(d.error); return }
+  if (d.path) currentFilePath = d.path; isModified = false; updateStatus()
 }
-
 async function doNew() {
-  if (isModified && !confirm("Fichier modifié. Continuer sans sauvegarder ?")) return
-  await window.newFile("")
-  currentFilePath = ""; isModified = false
-  replaceEditorContent(asciidocEditor, defaultAsciidoc)
-  replaceEditorContent(styleEditor, defaultCss)
-  updateStatusBar(); updatePreview()
+  if (isModified && !confirm("Fichier modifié. Continuer ?")) return
+  await window.newFile(""); currentFilePath = ""; isModified = false
+  replaceContent(asciidocEditor, defaultAsciidoc); replaceContent(styleEditor, defaultCss)
+  updateStatus(); updatePreview()
 }
 
 // --- Git ---
-async function updateGitStatus() {
-  const el = document.getElementById("status-git")
-  if (!el) return
-  try {
-    const info = JSON.parse(await window.getGitInfo(""))
-    if (info.branch) {
-      el.textContent = `⎇ ${info.branch}` + (info.clean ? "" : ` +${info.modified}`)
-      el.style.display = ""
-    } else { el.style.display = "none" }
-  } catch (e) { el.style.display = "none" }
+async function updateGit() {
+  const el = document.getElementById("status-git"); if (!el) return
+  try { const i = JSON.parse(await window.getGitInfo("")); el.textContent = i.branch ? `${i.branch}${i.clean ? "" : " +" + i.modified}` : ""; el.style.display = i.branch ? "" : "none" } catch (e) { el.style.display = "none" }
 }
 
-// --- Exports ---
+// --- Export ---
 async function doExport(fn, label) {
-  const c = asciidocEditor.state.doc.toString()
-  const s = styleEditor.state.doc.toString()
-  const result = await fn(c, s)
-  if (!result) return
-  const data = JSON.parse(result)
-  if (data.error) { alert("Erreur " + label + " : " + data.error); return }
-  if (data.success) alert(label + " exporté : " + (data.path || data.results?.join("\n")))
+  const r = await fn(asciidocEditor.state.doc.toString(), styleEditor.state.doc.toString())
+  if (!r) return; const d = JSON.parse(r)
+  if (d.error) alert("Erreur " + label + ": " + d.error)
+  else if (d.success) alert(label + " exporté: " + (d.path || d.results?.join("\n")))
 }
 
-// --- Preferences ---
-function savePref() {
-  window.savePreferences(JSON.stringify({
-    dark_mode: darkMode, preview_visible: previewVisible, sidebar_visible: sidebarVisible,
-  }))
-}
+// --- Prefs ---
+function savePref() { window.savePreferences(JSON.stringify({ dark_mode: darkMode, preview_visible: previewVisible, sidebar_visible: sidebarVisible })) }
 
 // --- Scroll sync ---
-function setupScrollSync() {
-  const scroller = asciidocEditor.dom.querySelector(".cm-scroller")
-  if (!scroller) return
-  scroller.addEventListener("scroll", () => {
-    const preview = document.getElementById("preview")
-    if (!preview || !previewVisible) return
-    const pct = scroller.scrollTop / (scroller.scrollHeight - scroller.clientHeight || 1)
-    const previewDoc = preview.contentDocument?.documentElement
-    if (previewDoc) previewDoc.scrollTop = pct * (previewDoc.scrollHeight - previewDoc.clientHeight)
+function setupScroll() {
+  const s = asciidocEditor.dom.querySelector(".cm-scroller")
+  if (!s) return
+  s.addEventListener("scroll", () => {
+    const p = document.getElementById("preview")
+    if (!p || !previewVisible) return
+    const pct = s.scrollTop / (s.scrollHeight - s.clientHeight || 1)
+    const pd = p.contentDocument?.documentElement
+    if (pd) pd.scrollTop = pct * (pd.scrollHeight - pd.clientHeight)
   })
 }
 
-// --- Go to line ---
-function goToLine(lineIndex) {
-  const line = asciidocEditor.state.doc.line(lineIndex + 1)
-  asciidocEditor.dispatch({
-    selection: { anchor: line.from },
-    scrollIntoView: true,
-  })
-  asciidocEditor.focus()
+function goToLine(i) {
+  const l = asciidocEditor.state.doc.line(i + 1)
+  asciidocEditor.dispatch({ selection: { anchor: l.from }, scrollIntoView: true }); asciidocEditor.focus()
+}
+
+// --- Menu action handler (called from native macOS menu via Crystal) ---
+function menuAction(id) {
+  if (id.startsWith("fmt:")) { applyFormat(id.slice(4)); return }
+  switch (id) {
+    case "new": doNew(); break
+    case "open": doOpen(); break
+    case "save": doSave(); break
+    case "saveAs": doSaveAs(); break
+    case "toggleSidebar": toggleSidebar(); break
+    case "togglePreview": togglePreview(); break
+    case "toggleMinimap": toggleMinimap(); break
+    case "toggleDark": toggleDark(); break
+    case "toggleZen": toggleZen(); break
+    case "exportHtml": doExport(window.exportHtml, "HTML"); break
+    case "exportPdf": doExport(window.exportPdf, "PDF"); break
+    case "exportEpub": doExport(window.exportEpub, "EPUB"); break
+    case "exportAll": doExport(window.exportAll, "Tous"); break
+  }
 }
 
 // --- Keyboard shortcuts ---
-function setupShortcuts() {
+function setupKeys() {
   document.addEventListener("keydown", (e) => {
     const mod = e.metaKey || e.ctrlKey
     if (mod && e.key === "s" && !e.shiftKey) { e.preventDefault(); doSave() }
@@ -548,77 +475,51 @@ function setupShortcuts() {
     else if (mod && e.key === "b" && !e.shiftKey) { e.preventDefault(); toggleSidebar() }
     else if (mod && e.key === "e" && !e.shiftKey) { e.preventDefault(); doExport(window.exportHtml, "HTML") }
     else if (mod && e.shiftKey && e.key === "e") { e.preventDefault(); doExport(window.exportAll, "Tous") }
-    else if (mod && e.key === "d") { e.preventDefault(); toggleDarkMode() }
+    else if (mod && e.key === "d") { e.preventDefault(); toggleDark() }
     else if (mod && e.key === "m") { e.preventDefault(); toggleMinimap() }
-    else if (e.key === "Escape" && zenMode) { toggleZenMode() }
-    else if (mod && e.key === "Enter") { e.preventDefault(); toggleZenMode() }
-    // Formatting shortcuts (when in AsciiDoc tab)
+    else if (e.key === "Escape" && zenMode) { toggleZen() }
+    else if (mod && e.key === "Enter") { e.preventDefault(); toggleZen() }
     else if (mod && e.key === "b" && e.shiftKey) { e.preventDefault(); applyFormat("bold") }
     else if (mod && e.key === "i") { e.preventDefault(); applyFormat("italic") }
   })
 }
 
-// --- Visual editor ---
-async function updateVisualEditor() {
-  const content = asciidocEditor.state.doc.toString()
-  const style = styleEditor.state.doc.toString()
-  const result = await window.convertAsciidoc(content)
-  const ve = document.getElementById("visual-editor")
-  ve.innerHTML = result
-  // Appliquer le style utilisateur
-  let styleEl = ve.parentElement.querySelector(".visual-user-style")
-  if (!styleEl) {
-    styleEl = document.createElement("style")
-    styleEl.className = "visual-user-style"
-    ve.parentElement.prepend(styleEl)
-  }
-  styleEl.textContent = style.replace(/body\b/g, ".visual-editor")
+// --- Divider ---
+function setupDivider() {
+  const dv = document.getElementById("divider"), panels = document.querySelector(".panels"), ep = document.querySelector(".editor-panel")
+  let drag = false
+  dv.addEventListener("mousedown", (e) => { drag = true; document.body.style.cursor = "col-resize"; document.body.style.userSelect = "none"; e.preventDefault() })
+  document.addEventListener("mousemove", (e) => {
+    if (!drag) return
+    const r = panels.getBoundingClientRect(), sw = sidebarVisible ? document.querySelector(".sidebar").offsetWidth : 0
+    ep.style.flex = "none"; ep.style.width = Math.max(20, Math.min(80, ((e.clientX - r.left - sw) / (r.width - sw)) * 100)) + "%"
+  })
+  document.addEventListener("mouseup", () => { if (drag) { drag = false; document.body.style.cursor = ""; document.body.style.userSelect = "" } })
 }
 
-// --- Menu helpers ---
-function showAbout() {
-  alert("Prism v1.0.0\nEditeur AsciiDoc en Crystal\nhttps://github.com/aloli-crystal/prism")
-}
-
-async function openRecent() {
-  // Ouvrir la sidebar sur les fichiers récents
-  if (!sidebarVisible) toggleSidebar()
-}
-
-function doFind() {
-  openSearchPanel(asciidocEditor)
-}
-
-// --- CLI load ---
-function loadFromCli(jsonStr) {
-  try { handleOpenResult(jsonStr) } catch (e) {}
-}
+function loadFromCli(j) { try { handleOpen(j) } catch (e) {} }
 
 // --- Init ---
 window.addEventListener("DOMContentLoaded", async () => {
   try {
-    const prefs = JSON.parse(await window.getPreferences(""))
-    darkMode = prefs.dark_mode || false
-    previewVisible = prefs.preview_visible !== false
-    sidebarVisible = prefs.sidebar_visible || false
+    const p = JSON.parse(await window.getPreferences(""))
+    darkMode = p.dark_mode || false; previewVisible = p.preview_visible !== false; sidebarVisible = p.sidebar_visible || false
     if (darkMode) document.body.classList.add("dark")
   } catch (e) {}
 
   asciidocEditor = createEditor(document.getElementById("editor-asciidoc"), StreamLanguage.define(asciidoc), defaultAsciidoc, schedulePreview)
   styleEditor = createEditor(document.getElementById("editor-style"), css(), defaultCss, schedulePreview)
 
-  // Visual editor: sync changes back on blur
-  const ve = document.getElementById("visual-editor")
-  ve.addEventListener("input", () => { markModified() })
-
   // Tabs
   document.querySelectorAll(".tab[data-group]").forEach((tab) => {
     tab.addEventListener("click", () => {
-      const group = tab.dataset.group
-      document.querySelectorAll(`.tab[data-group="${group}"]`).forEach((t) => t.classList.remove("active"))
+      const g = tab.dataset.group
+      document.querySelectorAll(`.tab[data-group="${g}"]`).forEach((t) => t.classList.remove("active"))
       tab.classList.add("active")
       const target = tab.dataset.tab
-      if (group === "editor") {
+      if (g === "editor") {
+        // Sync visual→asciidoc when leaving visual tab
+        if (activeTab === "visual" && target !== "visual") syncVisualToAsciidoc()
         activeTab = target
         document.getElementById("editor-asciidoc").classList.toggle("hidden", target !== "asciidoc")
         document.getElementById("editor-visual").classList.toggle("hidden", target !== "visual")
@@ -631,41 +532,14 @@ window.addEventListener("DOMContentLoaded", async () => {
   })
 
   // Format bar
-  document.querySelectorAll("[data-format]").forEach((btn) => {
-    btn.addEventListener("click", () => applyFormat(btn.dataset.format))
-  })
+  document.querySelectorAll("[data-format]").forEach((b) => b.addEventListener("click", () => applyFormat(b.dataset.format)))
 
-  // Toolbar buttons
-  // Les actions sont déclenchées par le menu natif macOS via les raccourcis clavier
-  // et par la barre de formatage via data-format
-
-  if (!previewVisible) togglePreview()
-  if (sidebarVisible) { document.querySelector(".sidebar").classList.remove("hidden"); loadSidebar() }
-
-  setupDivider(); setupShortcuts(); updateStatusBar(); updatePreview()
-  setTimeout(() => { setupScrollSync(); setupMinimap() }, 500)
-
-  // Breadcrumb update on cursor move
+  applyLayout()
+  if (sidebarVisible) loadSidebar()
+  setupDivider(); setupKeys(); updateStatus(); updatePreview()
+  setTimeout(() => { setupScroll(); setupMinimap() }, 500)
   asciidocEditor.dom.addEventListener("click", updateBreadcrumb)
-  asciidocEditor.dom.addEventListener("keyup", updateBreadcrumb)
+  asciidocEditor.dom.addEventListener("keyup", () => { updateBreadcrumb(); updateStatus() })
 })
 
-// --- Divider ---
-function setupDivider() {
-  const divider = document.getElementById("divider")
-  const panels = document.querySelector(".panels")
-  const editorPanel = document.querySelector(".editor-panel")
-  let dragging = false
-  divider.addEventListener("mousedown", (e) => { dragging = true; document.body.style.cursor = "col-resize"; document.body.style.userSelect = "none"; e.preventDefault() })
-  document.addEventListener("mousemove", (e) => {
-    if (!dragging) return
-    const rect = panels.getBoundingClientRect()
-    const sidebarW = sidebarVisible ? document.querySelector(".sidebar").offsetWidth : 0
-    const pct = ((e.clientX - rect.left - sidebarW) / (rect.width - sidebarW)) * 100
-    editorPanel.style.flex = "none"; editorPanel.style.width = Math.max(20, Math.min(80, pct)) + "%"
-  })
-  document.addEventListener("mouseup", () => { if (dragging) { dragging = false; document.body.style.cursor = ""; document.body.style.userSelect = "" } })
-}
-
-// Expose
-window.prism = { updatePreview, togglePreview, toggleSidebar, openPath: doOpenPath, goToLine, loadFromCli, about: showAbout, find: doFind, saveAs: doSaveAs, openRecent }
+window.prism = { updatePreview, togglePreview, toggleSidebar, openPath: doOpenPath, goToLine, loadFromCli, menuAction, about: () => alert("Prism v1.0\nÉditeur AsciiDoc en Crystal"), find: () => openSearchPanel(asciidocEditor), saveAs: doSaveAs, openRecent: () => { if (!sidebarVisible) toggleSidebar() } }
