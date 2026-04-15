@@ -16,8 +16,8 @@ echo ""
 
 # --- 1. Compilation release ---
 echo "[1/5] Compilation release..."
-crystal build src/prism.cr -o bin/prism --release --no-debug
-echo "      Binaire : $(du -h bin/prism | cut -f1)"
+crystal build src/prism.cr -o bin/Prism --release --no-debug
+echo "      Binaire : $(du -h bin/Prism | cut -f1)"
 
 # --- 2. Structure .app ---
 echo "[2/5] Création du bundle .app..."
@@ -26,7 +26,7 @@ mkdir -p "${APP_DIR}/Contents/MacOS"
 mkdir -p "${APP_DIR}/Contents/Resources"
 
 # Binaire
-cp bin/prism "${APP_DIR}/Contents/MacOS/${APP_NAME}"
+cp bin/Prism "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 
 # Icône
 if [ -f assets/AppIcon.icns ]; then

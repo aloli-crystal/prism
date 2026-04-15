@@ -8,11 +8,11 @@ APP_DIR="build/${APP_NAME}.app"
 DMG_FILE="build/${APP_NAME}.dmg"
 
 echo "Build debug (rapide)..."
-crystal build src/prism.cr -o bin/prism
+crystal build src/prism.cr -o bin/Prism
 
 rm -rf "${APP_DIR}"
 mkdir -p "${APP_DIR}/Contents/MacOS" "${APP_DIR}/Contents/Resources"
-cp bin/prism "${APP_DIR}/Contents/MacOS/${APP_NAME}"
+cp bin/Prism "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 [ -f assets/AppIcon.icns ] && cp assets/AppIcon.icns "${APP_DIR}/Contents/Resources/AppIcon.icns"
 
 # Copier le Info.plist du script principal (simplifié)

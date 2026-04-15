@@ -10,9 +10,9 @@ CMD_NAME="prm"
 echo "Installation de la commande '${CMD_NAME}'..."
 
 # Compiler si nécessaire
-if [ ! -f bin/prism ]; then
+if [ ! -f bin/Prism ]; then
   echo "Compilation..."
-  crystal build src/prism.cr -o bin/prism
+  crystal build src/prism.cr -o bin/Prism
 fi
 
 # Créer le wrapper
@@ -26,10 +26,8 @@ PRISM_BIN=""
 # Chercher le binaire
 if [ -f "/Applications/Prism.app/Contents/MacOS/Prism" ]; then
   PRISM_BIN="/Applications/Prism.app/Contents/MacOS/Prism"
-elif command -v prism &> /dev/null; then
-  PRISM_BIN="$(command -v prism)"
-elif [ -f "$HOME/prod-aloli/prism/bin/prism" ]; then
-  PRISM_BIN="$HOME/prod-aloli/prism/bin/prism"
+elif [ -f "$HOME/prod-aloli/prism/bin/Prism" ]; then
+  PRISM_BIN="$HOME/prod-aloli/prism/bin/Prism"
 fi
 
 if [ -z "$PRISM_BIN" ]; then

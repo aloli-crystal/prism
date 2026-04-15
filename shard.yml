@@ -13,7 +13,7 @@ crystal: ">= 1.19.0"
 license: MIT
 
 targets:
-  prism:
+  Prism:
     main: src/prism.cr
 
 dependencies:
