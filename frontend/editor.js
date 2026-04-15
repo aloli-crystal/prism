@@ -169,29 +169,43 @@ function applyVisualFormat(fmt) {
 function htmlToAsciidoc(el) {
   let out = ""
   for (const node of el.childNodes) {
-    if (node.nodeType === 3) { out += node.textContent; continue }
+    if (node.nodeType === 3) {
+      // Texte brut — ignorer les whitespace-only entre blocs
+      const t = node.textContent
+      if (t.trim()) out += t
+      continue
+    }
     if (node.nodeType !== 1) continue
     const tag = node.tagName.toLowerCase()
-    // Ignorer les éléments injectés (style, script)
+    // Ignorer les éléments injectés
     if (tag === "style" || tag === "script" || tag === "link") continue
-    const inner = node.innerHTML ? htmlToAsciidocInline(node) : ""
-    const text = node.textContent || ""
+    // Ignorer les éléments auto-générés par Asciidoctor
+    const id = node.id || ""
+    if (id === "toc" || id === "footer" || id === "last-updated") continue
+    const cls = node.className || ""
+
+    const text = (node.textContent || "").trim()
     switch (tag) {
-      case "h1": out += "\n= " + text + "\n"; break
+      // Titres — ne pas régénérer le h1 du titre (il est dans le header)
       case "h2": out += "\n== " + text + "\n"; break
       case "h3": out += "\n=== " + text + "\n"; break
       case "h4": out += "\n==== " + text + "\n"; break
+      case "h5": out += "\n===== " + text + "\n"; break
       case "p": out += "\n" + htmlToAsciidocInline(node) + "\n"; break
       case "strong": case "b": out += "*" + text + "*"; break
       case "em": case "i": out += "_" + text + "_"; break
       case "code": out += "`" + text + "`"; break
       case "pre": out += "\n----\n" + text + "\n----\n"; break
-      case "blockquote": out += "\n____\n" + htmlToAsciidoc(node) + "\n____\n"; break
-      case "ul": out += "\n" + htmlToAsciidocList(node, "*") + "\n"; break
-      case "ol": out += "\n" + htmlToAsciidocList(node, ".") + "\n"; break
+      case "blockquote": out += "\n____\n" + htmlToAsciidoc(node).trim() + "\n____\n"; break
+      case "ul": out += "\n" + htmlToAsciidocList(node, "*"); break
+      case "ol": out += "\n" + htmlToAsciidocList(node, "."); break
       case "a": out += node.href ? node.href + "[" + text + "]" : text; break
       case "br": out += " +\n"; break
-      case "div": out += "\n" + htmlToAsciidoc(node) + "\n"; break
+      case "table": out += "\n" + htmlToAsciidocTable(node) + "\n"; break
+      // Wrappers Asciidoctor (div.sect1, div.sectionbody, div#content, etc.) — traverser
+      case "div": case "section": case "span":
+        out += htmlToAsciidoc(node)
+        break
       default: out += htmlToAsciidoc(node); break
     }
   }
@@ -219,35 +233,107 @@ function htmlToAsciidocInline(el) {
 function htmlToAsciidocList(el, marker) {
   let out = ""
   for (const li of el.children) {
-    if (li.tagName.toLowerCase() === "li") out += marker + " " + li.textContent.trim() + "\n"
+    if (li.tagName.toLowerCase() === "li") {
+      out += marker + " " + htmlToAsciidocInline(li).trim() + "\n"
+    }
   }
   return out
 }
 
+function htmlToAsciidocTable(table) {
+  let out = "|===\n"
+  const rows = table.querySelectorAll("tr")
+  rows.forEach((row, i) => {
+    const cells = row.querySelectorAll("th, td")
+    const line = Array.from(cells).map((c) => "| " + c.textContent.trim()).join(" ")
+    out += line + "\n"
+    // Ligne vide après le header
+    if (i === 0 && row.querySelector("th")) out += "\n"
+  })
+  out += "|===\n"
+  return out
+}
+
 // --- Visual editor ---
+
+// Extraire l'entête AsciiDoc (titre, attributs) qui n'apparaît pas dans le HTML
+function extractAdocHeader(source) {
+  const lines = source.split("\n")
+  const header = []
+  let inHeader = true
+  let bodyStart = 0
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    if (inHeader) {
+      // Le header = titre (= ...) + attributs (:key: value) + lignes vides entre eux
+      if (/^= /.test(line) || /^:\w[\w-]*:/.test(line) || line.trim() === "") {
+        header.push(line)
+        bodyStart = i + 1
+      } else {
+        inHeader = false
+      }
+    }
+  }
+
+  // Nettoyer les lignes vides en fin de header
+  while (header.length > 0 && header[header.length - 1].trim() === "") header.pop()
+
+  return {
+    header: header.join("\n"),
+    body: lines.slice(bodyStart).join("\n")
+  }
+}
+
 async function updateVisualEditor() {
   const content = asciidocEditor.state.doc.toString()
   const style = styleEditor.state.doc.toString()
   const result = await window.convertAsciidoc(content)
   const ve = document.getElementById("visual-editor")
-  // Retirer le TOC auto-généré (pas éditable)
+
+  // Retirer tout le contenu auto-généré
   const tmp = document.createElement("div")
   tmp.innerHTML = result
-  const toc = tmp.querySelector("#toc")
-  if (toc) toc.remove()
+  tmp.querySelectorAll(
+    "#toc, #footer, #last-updated, .details, #header .details, " +
+    "#content > .sect0 > #preamble, script, link, style"
+  ).forEach((el) => el.remove())
+
+  // Retirer le div #footer et "Last updated"
+  const footer = tmp.querySelector("#footer")
+  if (footer) footer.remove()
+
   ve.innerHTML = tmp.innerHTML
+
   let styleEl = ve.parentElement.querySelector(".visual-user-style")
-  if (!styleEl) { styleEl = document.createElement("style"); styleEl.className = "visual-user-style"; ve.parentElement.prepend(styleEl) }
+  if (!styleEl) {
+    styleEl = document.createElement("style")
+    styleEl.className = "visual-user-style"
+    ve.parentElement.prepend(styleEl)
+  }
   styleEl.textContent = style.replace(/body\b/g, "#visual-editor")
 }
 
 function syncVisualToAsciidoc() {
   const ve = document.getElementById("visual-editor")
   if (!ve) return
-  // Cloner et retirer les éléments injectés (style, script)
+
+  // Préserver le header (titre + attributs) de la source originale
+  const originalSource = asciidocEditor.state.doc.toString()
+  const { header } = extractAdocHeader(originalSource)
+
+  // Cloner et nettoyer le DOM visuel
   const clone = ve.cloneNode(true)
-  clone.querySelectorAll("style, script, .visual-user-style").forEach((el) => el.remove())
-  const adoc = htmlToAsciidoc(clone).trim()
+  clone.querySelectorAll("style, script, link, .visual-user-style").forEach((el) => el.remove())
+
+  // Convertir le HTML en AsciiDoc (corps uniquement)
+  let body = htmlToAsciidoc(clone).trim()
+
+  // Nettoyer les lignes blanches multiples (max 2 consécutives)
+  body = body.replace(/\n{3,}/g, "\n\n")
+
+  // Recomposer : header original + corps converti
+  const adoc = header ? header + "\n\n" + body : body
   replaceContent(asciidocEditor, adoc)
   schedulePreview()
 }
