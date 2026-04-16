@@ -27,7 +27,7 @@ jobs:
         run: crystal spec
 
       - name: Build check
-        run: crystal build src/prism.cr -o bin/prism --no-debug
+        run: mkdir -p bin && crystal build src/prism.cr -o bin/Prism --no-debug
 
   build-app:
     runs-on: macos-latest
