@@ -16,7 +16,41 @@ module Prism
                 .chomp
             }}
 
+  USAGE = <<-USAGE
+    Usage : prism [FICHIER.adoc]
+
+    Éditeur AsciiDoc / Markdown natif macOS — webview embarqué pour
+    la prévisualisation, menus AppKit natifs, export HTML / PDF / EPUB
+    via le pipeline crystal-asciidoctor.
+
+    Sans argument, ouvre l'éditeur sur un nouveau document.
+    Avec argument, ouvre le fichier passé en paramètre.
+
+    Options :
+      -h, --help        Affiche cette aide et quitte
+      -v, --version     Affiche la version et quitte
+
+    Raccourcis (in-app) :
+      ⌘N  Nouveau                 ⌘O  Ouvrir
+      ⌘S  Enregistrer              ⇧⌘S Enregistrer sous
+      ⌘B  Gras                    ⌘I  Italique
+      ⌘E  Export HTML              ⇧⌘E Tout exporter
+      ⌘P  Prévisualisation         ⌘D  Thème clair/sombre
+    USAGE
+
   def self.run
+    # Court-circuit avant init AppKit pour les flags méta : un GUI
+    # ne devrait pas s'ouvrir juste pour `--help` ou `--version`
+    # (sinon impossible à scripter, à diagnostiquer en CI, etc.).
+    if ARGV.includes?("-h") || ARGV.includes?("--help") || ARGV.first? == "help"
+      puts USAGE
+      return
+    end
+    if ARGV.includes?("-v") || ARGV.includes?("--version")
+      puts "prism #{VERSION}"
+      return
+    end
+
     file_arg = ARGV.first? if ARGV.size > 0
 
     AppKit.init
