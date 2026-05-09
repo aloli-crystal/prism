@@ -8,6 +8,7 @@ APP_DIR="build/${APP_NAME}.app"
 DMG_FILE="build/${APP_NAME}.dmg"
 
 echo "Build debug (rapide)..."
+mkdir -p bin
 crystal build src/prism.cr -o bin/Prism
 
 rm -rf "${APP_DIR}"

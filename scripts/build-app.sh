@@ -16,6 +16,7 @@ echo ""
 
 # --- 1. Compilation release ---
 echo "[1/5] Compilation release..."
+mkdir -p bin
 crystal build src/prism.cr -o bin/Prism --release --no-debug
 echo "      Binaire : $(du -h bin/Prism | cut -f1)"
 

@@ -12,6 +12,7 @@ echo "Installation de la commande '${CMD_NAME}'..."
 # Compiler si nécessaire
 if [ ! -f bin/Prism ]; then
   echo "Compilation..."
+  mkdir -p bin
   crystal build src/prism.cr -o bin/Prism
 fi
 

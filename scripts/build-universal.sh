@@ -7,6 +7,8 @@ cd "$(dirname "$0")/.."
 echo "=== Build Universal Binary ==="
 echo ""
 
+mkdir -p bin
+
 # 1. Build arm64 (natif sur Apple Silicon)
 echo "[1/3] Build arm64..."
 crystal build src/prism.cr -o bin/Prism-arm64 --release --no-debug
