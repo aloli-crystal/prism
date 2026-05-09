@@ -9,7 +9,7 @@ module Prism
         <html lang="fr">
         <head><meta charset="UTF-8"><style>#{css}</style></head>
         <body>
-          <!-- Le menu est natif macOS via crystal-appkit -->
+          <!-- Le menu est natif macOS via appkit -->
 
           <div id="breadcrumb"><span class="bc-item">Document</span></div>
 

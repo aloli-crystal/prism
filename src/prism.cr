@@ -2,7 +2,7 @@ require "webview"
 require "crystal-asciidoctor"
 require "crystal-asciidoctor-pdf/src/asciidoctor_pdf"
 require "crystal-asciidoctor-epub3/src/asciidoctor_epub"
-require "crystal-appkit"
+require "appkit"
 require "./prism/app"
 
 module Prism

@@ -28,6 +28,6 @@ dependencies:
   crystal-asciidoctor-epub3:
     github: aloli-crystal/crystal-asciidoctor-epub3
     branch: production
-  crystal-appkit:
-    github: aloli-crystal/crystal-appkit
-    branch: development
+  appkit:
+    github: aloli-crystal/appkit
+    branch: production
