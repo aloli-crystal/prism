@@ -23,7 +23,7 @@ NOTE: macOS affiche un avertissement car l'application n'est pas notarisée par 
 git clone https://github.com/aloli-crystal/prism.git
 cd prism
 shards install
-crystal build src/prism.cr -o bin/prism --release
+shards build --release
 ----
 
 === Commande terminal `prm`

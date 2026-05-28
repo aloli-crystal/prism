@@ -1,5 +1,5 @@
 name: prism
-version: 1.0.2
+version: 1.0.3
 
 authors:
   - Philippe <papilip@github>
@@ -13,7 +13,7 @@ crystal: ">= 1.19.0"
 license: MIT
 
 targets:
-  Prism:
+  prism:
     main: src/prism.cr
 
 dependencies:

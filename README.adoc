@@ -28,7 +28,7 @@ Prism est un éditeur AsciiDoc de bureau en pur Crystal avec exportation automat
 git clone https://github.com/aloli-crystal/prism.git
 cd prism
 shards install
-crystal build src/prism.cr -o bin/prism
+shards build --release
 ----
 
 == Utilisation
