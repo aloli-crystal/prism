@@ -134,8 +134,8 @@ La barre de formatage permet d'insérer des éléments AsciiDoc sans mémoriser 
 Prism peut exporter votre document dans trois formats :
 
 HTML:: Document HTML standalone avec le style personnalisé embarqué
-PDF:: Via crystal-asciidoctor-pdf
-EPUB:: Via crystal-asciidoctor-epub3
+PDF:: Via asciicrystal-pdf
+EPUB:: Via asciicrystal-epub3
 
 Le bouton *Tout* exporte les trois formats simultanément, en utilisant le même nom de base que le fichier source.
 
@@ -168,7 +168,7 @@ C'est normal pour une application non notarisée. Solutions :
 
 === L'export PDF ou EPUB échoue
 
-Vérifiez que les shards `crystal-asciidoctor-pdf` et `crystal-asciidoctor-epub3` sont bien installés :
+Vérifiez que les shards `asciicrystal-pdf` et `asciicrystal-epub3` sont bien installés :
 
 [source,bash]
 ----

@@ -27,28 +27,28 @@ L'organisation https://github.com/orgs/aloli-crystal/repositories[aloli-crystal]
 |===
 | Shard | Rôle
 
-| `crystal-asciidoctor`
+| `asciicrystal`
 | Parsing AsciiDoc, modèle AST
 
-| `crystal-asciidoctor-pdf` / `crystal-pdf`
+| `asciicrystal-pdf` / `crystal-pdf`
 | Export PDF
 
-| `crystal-asciidoctor-epub3`
+| `asciicrystal-epub3`
 | Export EPUB3
 
 | `crystal-rouge`
 | Coloration syntaxique du code
 
-| `crystal-asciidoctor-diagram`
+| `asciicrystal-diagram`
 | Support diagrammes
 
-| `crystal-asciidoctor-kroki`
+| `asciicrystal-kroki`
 | Intégration Kroki (diagrammes)
 
-| `crystal-asciidoctor-mathematical`
+| `asciicrystal-mathematical`
 | Notation mathématique
 
-| `crystal-asciidoctor-revealjs`
+| `asciicrystal-revealjs`
 | Génération de présentations
 
 | `crystal-antora`
@@ -212,19 +212,19 @@ Insuffisant pour un éditeur AsciiDoc.
 | Prêt
 
 | Parsing AsciiDoc
-| crystal-asciidoctor (aloli)
+| asciicrystal (aloli)
 | Prêt
 
 | Export HTML
-| crystal-asciidoctor (aloli)
+| asciicrystal (aloli)
 | Prêt
 
 | Export PDF
-| crystal-asciidoctor-pdf (aloli)
+| asciicrystal-pdf (aloli)
 | Prêt
 
 | Export EPUB3
-| crystal-asciidoctor-epub3 (aloli)
+| asciicrystal-epub3 (aloli)
 | Prêt
 
 | Prévisualisation HTML live
@@ -280,7 +280,7 @@ L'approche GTK4 reste pertinente si une version Linux native est envisagée par 
 
 * [ ] Prototyper une fenêtre `naqvis/webview` avec CodeMirror 6 intégré
 * [ ] Tester la communication bidirectionnelle Crystal <-> JS (envoi du contenu AsciiDoc, réception du HTML)
-* [ ] Intégrer le pipeline crystal-asciidoctor côté Crystal
+* [ ] Intégrer le pipeline asciicrystal côté Crystal
 * [ ] Implémenter la prévisualisation live (conversion AsciiDoc -> HTML -> affichage dans la webview)
 * [ ] Ajouter l'éditeur de style CSS (second panneau CodeMirror)
 * [ ] Tester les exports PDF et EPUB via les shards aloli-crystal

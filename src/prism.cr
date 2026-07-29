@@ -1,7 +1,7 @@
 require "webview"
-require "crystal-asciidoctor"
-require "crystal-asciidoctor-pdf/src/asciidoctor_pdf"
-require "crystal-asciidoctor-epub3/src/asciidoctor_epub"
+require "asciicrystal"
+require "asciicrystal-pdf/src/asciidoctor_pdf"
+require "asciicrystal-epub3/src/asciidoctor_epub"
 require "appkit"
 require "./prism/app"
 
@@ -21,7 +21,7 @@ module Prism
 
     Éditeur AsciiDoc / Markdown natif macOS — webview embarqué pour
     la prévisualisation, menus AppKit natifs, export HTML / PDF / EPUB
-    via le pipeline crystal-asciidoctor.
+    via le pipeline asciicrystal.
 
     Sans argument, ouvre l'éditeur sur un nouveau document.
     Avec argument, ouvre le fichier passé en paramètre.

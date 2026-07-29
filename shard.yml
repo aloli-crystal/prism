@@ -1,5 +1,5 @@
 name: prism
-version: 1.0.3
+version: 1.0.4
 
 authors:
   - Philippe <papilip@github>
@@ -19,14 +19,14 @@ targets:
 dependencies:
   webview:
     github: naqvis/webview
-  crystal-asciidoctor:
-    github: aloli-crystal/crystal-asciidoctor
-    version: "~> 2.0"
-  crystal-asciidoctor-pdf:
-    github: aloli-crystal/crystal-asciidoctor-pdf
+  asciicrystal:
+    github: aloli-crystal/asciicrystal
+    version: "~> 2.0.26.12"
+  asciicrystal-pdf:
+    github: aloli-crystal/asciicrystal-pdf
     branch: production
-  crystal-asciidoctor-epub3:
-    github: aloli-crystal/crystal-asciidoctor-epub3
+  asciicrystal-epub3:
+    github: aloli-crystal/asciicrystal-epub3
     branch: production
   appkit:
     github: aloli-crystal/appkit

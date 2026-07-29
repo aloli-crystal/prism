@@ -36,13 +36,13 @@ Prism est un éditeur AsciiDoc de bureau en pur Crystal, conçu pour offrir une 
 | CodeMirror 6 + codemirror-asciidoc
 
 | Parsing AsciiDoc
-| crystal-asciidoctor (aloli-crystal)
+| asciicrystal (aloli-crystal)
 
 | Export PDF
-| crystal-asciidoctor-pdf (aloli-crystal)
+| asciicrystal-pdf (aloli-crystal)
 
 | Export EPUB
-| crystal-asciidoctor-epub3 (aloli-crystal)
+| asciicrystal-epub3 (aloli-crystal)
 
 | Coloration syntaxique (export)
 | crystal-rouge (aloli-crystal)
@@ -73,7 +73,7 @@ Prism est un éditeur AsciiDoc de bureau en pur Crystal, conçu pour offrir une 
 │                            │                                 │
 │  ┌─────────────────────────▼───────────────────────────────┐ │
 │  │  Moteur de conversion                                   │ │
-│  │  crystal-asciidoctor (parse, AST, transform)            │ │
+│  │  asciicrystal (parse, AST, transform)            │ │
 │  └────┬──────────────┬──────────────┬──────────────────────┘ │
 │       │              │              │                         │
 │  ┌────▼────┐   ┌─────▼─────┐  ┌────▼─────┐                  │
@@ -278,11 +278,11 @@ NOTE: La conversion HTML → AsciiDoc (F2.3) est le point le plus complexe. Elle
 | V0.2
 
 | F7.2
-| Export PDF via crystal-asciidoctor-pdf
+| Export PDF via asciicrystal-pdf
 | V0.2
 
 | F7.3
-| Export EPUB3 via crystal-asciidoctor-epub3
+| Export EPUB3 via asciicrystal-epub3
 | V0.2
 
 | F7.4
@@ -350,7 +350,7 @@ NOTE: La conversion HTML → AsciiDoc (F2.3) est le point le plus complexe. Elle
 
 === V0.2 — Fondations ✓
 
-* [x] Intégration de crystal-asciidoctor pour la vraie conversion
+* [x] Intégration de asciicrystal pour la vraie conversion
 * [x] Onglet HTML (édition bidirectionnelle AsciiDoc ↔ HTML, sens AsciiDoc→HTML)
 * [x] Ouvrir / sauvegarder / fermer un fichier
 * [x] Prévisualisation rétractable (bouton + raccourci Cmd+P)
@@ -408,12 +408,12 @@ NOTE: La conversion HTML → AsciiDoc (F2.3) est le point le plus complexe. Elle
 
 === Édition bidirectionnelle (AsciiDoc ↔ HTML)
 
-La conversion AsciiDoc → HTML repose sur `crystal-asciidoctor` qui produit un AST. La difficulté principale est la conversion *inverse* (HTML → AsciiDoc).
+La conversion AsciiDoc → HTML repose sur `asciicrystal` qui produit un AST. La difficulté principale est la conversion *inverse* (HTML → AsciiDoc).
 
 Approche envisagée :
 
 . L'AST AsciiDoc est la *source de vérité*
-. AsciiDoc → AST → HTML est le flux naturel (crystal-asciidoctor)
+. AsciiDoc → AST → HTML est le flux naturel (asciicrystal)
 . HTML modifié → diff avec le HTML original → identification des nœuds AST impactés → mise à jour de l'AST → regénération du source AsciiDoc
 . En V0.2, seul le sens AsciiDoc → HTML est actif ; le HTML est en lecture seule éditable
 . En V0.3, la conversion inverse est implémentée

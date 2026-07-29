@@ -130,7 +130,7 @@ module Prism
     # --- Conversion ---
 
     private def convert_to_html(asciidoc : String) : String
-      Asciidoctor.convert(asciidoc, {
+      Asciicrystal.convert(asciidoc, {
         "safe"    => "safe",
         "backend" => "html5",
       })
@@ -219,7 +219,7 @@ module Prism
     # --- Exports (dialogues natifs AppKit) ---
 
     private def export_html(content : String, stylesheet : String) : String
-      html = Asciidoctor.convert(content, {
+      html = Asciicrystal.convert(content, {
         "safe"       => "safe",
         "backend"    => "html5",
         "standalone" => "true",
@@ -243,8 +243,8 @@ module Prism
       return "" unless path
       path += ".pdf" unless path.ends_with?(".pdf")
 
-      doc = Asciidoctor.load(content, {"safe" => "safe", "backend" => "pdf", "outfile" => path})
-      AsciidoctorPDF::Converter.new.convert(doc)
+      doc = Asciicrystal.load(content, {"safe" => "safe", "backend" => "pdf", "outfile" => path})
+      AsciicrystalPDF::Converter.new.convert(doc)
       {success: true, path: path, format: "PDF"}.to_json
     rescue ex
       {error: ex.message}.to_json
@@ -255,8 +255,8 @@ module Prism
       return "" unless path
       path += ".epub" unless path.ends_with?(".epub")
 
-      doc = Asciidoctor.load(content, {"safe" => "safe"})
-      AsciidoctorEpub::Converter.new.convert_to_file(doc, path)
+      doc = Asciicrystal.load(content, {"safe" => "safe"})
+      AsciicrystalEpub::Converter.new.convert_to_file(doc, path)
       {success: true, path: path, format: "EPUB"}.to_json
     rescue ex
       {error: ex.message}.to_json
@@ -267,7 +267,7 @@ module Prism
 
       html_path = base_export_path("html")
       if html_path
-        html = Asciidoctor.convert(content, {"safe" => "safe", "backend" => "html5", "standalone" => "true"})
+        html = Asciicrystal.convert(content, {"safe" => "safe", "backend" => "html5", "standalone" => "true"})
         unless stylesheet.strip.empty?
           html = html.sub("</head>", "<style>#{stylesheet}</style></head>")
         end
@@ -277,15 +277,15 @@ module Prism
 
       pdf_path = base_export_path("pdf")
       if pdf_path
-        doc = Asciidoctor.load(content, {"safe" => "safe", "backend" => "pdf", "outfile" => pdf_path})
-        AsciidoctorPDF::Converter.new.convert(doc)
+        doc = Asciicrystal.load(content, {"safe" => "safe", "backend" => "pdf", "outfile" => pdf_path})
+        AsciicrystalPDF::Converter.new.convert(doc)
         results << "PDF: #{pdf_path}"
       end
 
       epub_path = base_export_path("epub")
       if epub_path
-        doc = Asciidoctor.load(content, {"safe" => "safe"})
-        AsciidoctorEpub::Converter.new.convert_to_file(doc, epub_path)
+        doc = Asciicrystal.load(content, {"safe" => "safe"})
+        AsciicrystalEpub::Converter.new.convert_to_file(doc, epub_path)
         results << "EPUB: #{epub_path}"
       end
 
