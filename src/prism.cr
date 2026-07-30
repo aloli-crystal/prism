@@ -1,7 +1,7 @@
 require "webview"
 require "asciicrystal"
-require "asciicrystal-pdf/src/asciidoctor_pdf"
-require "asciicrystal-epub3/src/asciidoctor_epub"
+require "asciicrystal-pdf/src/asciicrystal_pdf"
+require "asciicrystal-epub3/src/asciicrystal_epub"
 require "appkit"
 require "./prism/app"
 
